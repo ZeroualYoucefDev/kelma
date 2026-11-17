@@ -19,10 +19,10 @@ export default async function SettingsPage() {
 
   return (
     <div>
-      <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-lime">
+      <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
         <SlidersHorizontal className="size-3.5" /> Settings
       </p>
-      <h1 className="mt-2 font-display text-4xl font-extrabold">Make Lumio yours.</h1>
+      <h1 className="mt-2 font-display text-4xl font-extrabold">Make Kelma yours.</h1>
 
       <div className="mt-9 grid gap-5 lg:grid-cols-2">
         <div className="rounded-2xl border border-line bg-surface/60 p-6">
@@ -55,7 +55,7 @@ export default async function SettingsPage() {
             </div>
             {player.plan === "pro" ? (
               <p className="mt-4 text-sm text-slate-300">
-                Unlimited hearts and 1.5× XP are active. Thank you for supporting Lumio.
+                Unlimited hearts and 1.5× XP are active. Thank you for supporting Kelma.
               </p>
             ) : (
               <>
@@ -72,13 +72,13 @@ export default async function SettingsPage() {
 
           <div className="rounded-2xl border border-line bg-surface/60 p-6">
             <h2 className="flex items-center gap-2 font-display text-lg font-bold">
-              <ShieldCheck className="size-4 text-lime" /> Verification
+              <ShieldCheck className="size-4 text-accent" /> Verification
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-slate-400">
               Only verified Google, email magic-link or phone-OTP sessions can reach the dashboard.
               Password registration is not offered anywhere in the product.
             </p>
-            <Badge variant="lime" className="mt-4">Verified account</Badge>
+            <Badge variant="accent" className="mt-4">Verified account</Badge>
           </div>
         </div>
       </div>

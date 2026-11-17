@@ -20,11 +20,11 @@ export default async function VerifyPage() {
     <AuthShell title="One last step" subtitle="Confirm your email or phone to unlock your dashboard.">
       {clerkConfigured ? (
         <div className="space-y-5">
-          <div className="flex items-start gap-3 rounded-2xl border border-lime/25 bg-lime/8 p-4">
-            <MailCheck className="mt-0.5 size-5 shrink-0 text-lime" />
+          <div className="flex items-start gap-3 rounded-2xl border border-accent/25 bg-accent/8 p-4">
+            <MailCheck className="mt-0.5 size-5 shrink-0 text-accent" />
             <p className="text-sm leading-relaxed text-slate-200">
               Open the confirmation link we sent you. Once verified you will land directly on{" "}
-              <strong className="text-lime">/learn</strong> — no detour through the homepage.
+              <strong className="text-accent">/learn</strong> — no detour through the homepage.
             </p>
           </div>
           <Button asChild variant="secondary" className="w-full">

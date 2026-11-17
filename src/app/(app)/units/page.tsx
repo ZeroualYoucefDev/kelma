@@ -19,14 +19,14 @@ export default async function UnitsPage() {
   const curriculum = await buildCurriculum(player.sourceLanguage, player.targetLanguage).catch(() => null);
 
   if (!curriculum) {
-    return <p className="text-sm text-rose">The live curriculum is temporarily unavailable.</p>;
+    return <p className="text-sm text-coral">The live curriculum is temporarily unavailable.</p>;
   }
 
   let completed = 0;
 
   return (
     <div>
-      <p className="text-xs font-bold uppercase tracking-[0.2em] text-violet">Curriculum</p>
+      <p className="text-xs font-bold uppercase tracking-[0.2em] text-teal">Curriculum</p>
       <h1 className="mt-2 font-display text-4xl font-extrabold">All units</h1>
       <p className="mt-3 text-sm text-slate-400">
         {curriculum.units.length} sequential units · {curriculum.totalWords.toLocaleString()} live vocabulary items.
@@ -41,16 +41,16 @@ export default async function UnitsPage() {
             <Link
               key={unit.id}
               href={`/units/${unit.id}`}
-              className="group rounded-2xl border border-line bg-surface/60 p-6 transition-all hover:-translate-y-1 hover:border-lime/40"
+              className="group rounded-2xl border border-line bg-surface/60 p-6 transition-all hover:-translate-y-1 hover:border-accent/40"
             >
               <div className="flex items-start justify-between gap-3">
-                <span className="grid size-10 place-items-center rounded-xl bg-violet/15 font-display font-extrabold text-violet">
+                <span className="grid size-10 place-items-center rounded-xl bg-teal/15 font-display font-extrabold text-teal">
                   {unit.index}
                 </span>
                 {percent === 100 ? (
-                  <CheckCircle2 className="size-5 text-lime" />
+                  <CheckCircle2 className="size-5 text-accent" />
                 ) : (
-                  <ArrowRight className="size-5 text-slate-600 transition-colors group-hover:text-lime" />
+                  <ArrowRight className="size-5 text-slate-600 transition-colors group-hover:text-accent" />
                 )}
               </div>
               <h2 className="mt-5 font-display text-lg font-extrabold">{unit.title}</h2>

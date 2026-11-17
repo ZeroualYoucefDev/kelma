@@ -27,9 +27,9 @@ function PathNode({
       aria-disabled={state === "locked"}
       className={cn(
         "group relative flex size-14 items-center justify-center rounded-2xl border-2 transition-all",
-        state === "done" && "border-lime bg-lime text-ink",
+        state === "done" && "border-accent bg-accent text-ink",
         isCurrent &&
-          "scale-110 border-lime bg-lime text-ink shadow-[0_0_0_8px_rgba(182,243,106,0.12)] hover:scale-115",
+          "scale-110 border-accent bg-accent text-ink shadow-[0_0_0_8px_rgba(182,243,106,0.12)] hover:scale-115",
         state === "locked" && "cursor-not-allowed border-line bg-surface-2 text-slate-600",
       )}
     >
@@ -66,7 +66,7 @@ export function UnitPath({
             <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="grid size-9 place-items-center rounded-xl bg-violet/15 font-display text-sm font-extrabold text-violet">
+                  <span className="grid size-9 place-items-center rounded-xl bg-teal/15 font-display text-sm font-extrabold text-teal">
                     {unit.index}
                   </span>
                   <h2 className="font-display text-2xl font-extrabold">{unit.title}</h2>

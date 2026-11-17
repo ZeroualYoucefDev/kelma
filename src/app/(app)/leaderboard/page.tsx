@@ -20,7 +20,7 @@ export default async function LeaderboardPage() {
           <h1 className="mt-2 font-display text-4xl font-extrabold">The top of the class.</h1>
           <p className="mt-3 text-sm text-slate-400">Ranked by lifetime XP from saved lesson attempts.</p>
         </div>
-        <Badge variant="lime">Updated live</Badge>
+        <Badge variant="accent">Updated live</Badge>
       </div>
 
       {learners.length === 0 ? (
@@ -49,7 +49,7 @@ export default async function LeaderboardPage() {
               >
                 {index === 0 ? <Crown className="size-4" /> : index + 1}
               </span>
-              <span className="grid size-9 place-items-center rounded-full bg-violet/15 text-xs font-extrabold text-violet">
+              <span className="grid size-9 place-items-center rounded-full bg-teal/15 text-xs font-extrabold text-teal">
                 {initials(learner.name)}
               </span>
               <div className="min-w-0 flex-1">
@@ -60,7 +60,7 @@ export default async function LeaderboardPage() {
               <span className="flex items-center gap-1 text-xs font-bold text-gold">
                 <Flame className="size-3.5" /> {learner.streak}
               </span>
-              <span className="flex items-center gap-1 text-sm font-extrabold text-lime">
+              <span className="flex items-center gap-1 text-sm font-extrabold text-accent">
                 <Zap className="size-3.5" /> {formatNumber(learner.xp)}
               </span>
             </div>

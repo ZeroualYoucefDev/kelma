@@ -6,12 +6,12 @@ export function Badge({
   variant = "default",
   ...props
 }: React.ComponentProps<"span"> & {
-  variant?: "default" | "lime" | "violet" | "gold" | "outline";
+  variant?: "default" | "accent" | "teal" | "gold" | "outline";
 }) {
   const variants = {
     default: "bg-white/8 text-slate-200",
-    lime: "bg-lime/15 text-lime border border-lime/25",
-    violet: "bg-violet/15 text-violet border border-violet/25",
+    accent: "bg-accent/15 text-accent border border-accent/25",
+    teal: "bg-teal/15 text-teal border border-teal/25",
     gold: "bg-gold/15 text-gold border border-gold/25",
     outline: "border border-line text-slate-300",
   } as const;

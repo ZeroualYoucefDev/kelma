@@ -22,7 +22,7 @@ export function TabsTrigger({
   return (
     <TabsPrimitive.Trigger
       className={cn(
-        "rounded-lg px-4 py-2 text-sm font-bold text-slate-400 transition-colors data-[state=active]:bg-lime data-[state=active]:text-ink",
+        "rounded-lg px-4 py-2 text-sm font-bold text-slate-400 transition-colors data-[state=active]:bg-accent data-[state=active]:text-ink",
         className,
       )}
       {...props}

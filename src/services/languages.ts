@@ -11,7 +11,7 @@ export type Language = {
 };
 
 /**
- * Product configuration: which ISO languages Lumio currently supports.
+ * Product configuration: which ISO languages Kelma currently supports.
  * Names are NOT stored here — they are resolved at runtime from the
  * ISO-639-1 dataset maintained by the `haliaeetus` public repository.
  */

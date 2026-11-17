@@ -50,19 +50,19 @@ export default async function LandingPage() {
       icon: Radio,
       title: "Really live content",
       body: "Every word, translation and pronunciation is pulled from public language APIs at runtime. No stale, bundled word lists.",
-      tone: "text-lime",
+      tone: "text-accent",
     },
     {
       icon: BookOpenText,
       title: "Winding skill paths",
       body: "Sequential units unfold into bite-sized lessons that adapt as you grow, with listening, reverse and meaning drills.",
-      tone: "text-violet",
+      tone: "text-teal",
     },
     {
       icon: HeartPulse,
       title: "Hearts that matter",
       body: "Mistakes cost a heart, patience refills them, and Pro learners never run dry. Every choice has a consequence.",
-      tone: "text-rose",
+      tone: "text-coral",
     },
     {
       icon: Flame,
@@ -80,22 +80,22 @@ export default async function LandingPage() {
       icon: Zap,
       title: "Native-sounding audio",
       body: "Listening prompts are spoken by your device's own voices in the target language, instantly and offline-friendly.",
-      tone: "text-lime",
+      tone: "text-accent",
     },
   ];
 
   return (
     <div className="relative min-h-screen overflow-hidden">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[720px] grid-glow" />
-      <div className="pointer-events-none absolute -left-40 top-20 size-[420px] rounded-full bg-lime/8 blur-[120px]" />
-      <div className="pointer-events-none absolute -right-40 top-72 size-[460px] rounded-full bg-violet/10 blur-[130px]" />
+      <div className="pointer-events-none absolute -left-40 top-20 size-[420px] rounded-full bg-accent/8 blur-[120px]" />
+      <div className="pointer-events-none absolute -right-40 top-72 size-[460px] rounded-full bg-teal/10 blur-[130px]" />
 
       <Navbar />
 
       <main>
         <section className="mx-auto grid max-w-6xl items-center gap-14 px-5 pb-24 pt-36 lg:grid-cols-2 lg:gap-10 lg:pt-44">
           <div>
-            <Badge variant="lime" className="mb-6">
+            <Badge variant="accent" className="mb-6">
               <Sparkles className="size-3" /> Powered by live language data
             </Badge>
             <h1 className="font-display text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
@@ -133,7 +133,7 @@ export default async function LandingPage() {
 
         <section id="features" className="mx-auto max-w-6xl px-5 py-20">
           <div className="mb-12 max-w-2xl">
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-lime">Why Lumio</p>
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-accent">Why Kelma</p>
             <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
               Built for momentum, not memorisation.
             </h2>
@@ -142,7 +142,7 @@ export default async function LandingPage() {
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className="group rounded-2xl border border-line bg-surface/60 p-6 transition-all hover:-translate-y-1 hover:border-lime/40 hover:bg-surface"
+                className="group rounded-2xl border border-line bg-surface/60 p-6 transition-all hover:-translate-y-1 hover:border-accent/40 hover:bg-surface"
               >
                 <feature.icon className={`size-7 ${feature.tone}`} />
                 <h3 className="mt-5 font-display text-lg font-bold">{feature.title}</h3>
@@ -162,7 +162,7 @@ export default async function LandingPage() {
                 { n: "03", title: "Protect your streak", body: "Earn XP and gems, refill hearts, and stay consistent with freezes and daily quests." },
               ].map((step) => (
                 <div key={step.n} className="rounded-2xl border border-line bg-ink/60 p-7">
-                  <span className="font-display text-5xl font-extrabold text-lime/25">{step.n}</span>
+                  <span className="font-display text-5xl font-extrabold text-accent/25">{step.n}</span>
                   <h3 className="mt-3 font-display text-xl font-bold">{step.title}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-slate-400">{step.body}</p>
                 </div>
@@ -174,7 +174,7 @@ export default async function LandingPage() {
         <section id="languages" className="mx-auto max-w-6xl px-5 py-20">
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div>
-              <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.2em] text-violet">
+              <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.2em] text-teal">
                 <Globe2 className="size-4" /> Languages
               </p>
               <h2 className="mt-3 font-display text-4xl font-extrabold">Go where curiosity takes you.</h2>
@@ -197,7 +197,7 @@ export default async function LandingPage() {
         </section>
 
         <section className="mx-auto max-w-6xl px-5 pb-24">
-          <div className="relative overflow-hidden rounded-3xl border border-lime/25 bg-gradient-to-br from-lime/15 via-surface to-violet/15 p-10 text-center sm:p-16">
+          <div className="relative overflow-hidden rounded-3xl border border-accent/25 bg-gradient-to-br from-accent/15 via-surface to-teal/15 p-10 text-center sm:p-16">
             <div className="pointer-events-none absolute inset-0 grid-glow opacity-60" />
             <div className="relative">
               <h2 className="font-display text-4xl font-extrabold sm:text-5xl">Your streak starts today.</h2>

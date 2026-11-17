@@ -36,8 +36,8 @@ export default async function LessonPage({
 
   if (!lesson) {
     return (
-      <div className="mx-auto max-w-xl rounded-2xl border border-rose/30 bg-rose/8 p-6 text-center">
-        <h1 className="font-display text-xl font-bold text-rose">Live lesson unavailable</h1>
+      <div className="mx-auto max-w-xl rounded-2xl border border-coral/30 bg-coral/8 p-6 text-center">
+        <h1 className="font-display text-xl font-bold text-coral">Live lesson unavailable</h1>
         <p className="mt-2 text-sm text-slate-300">
           A translation provider did not return enough data. Refresh to try fresh words.
         </p>

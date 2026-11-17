@@ -24,9 +24,9 @@ export default async function ProfilePage() {
   const level = levelFromXp(progress.xp);
 
   const stats = [
-    { icon: Zap, label: "Total XP", value: progress.xp.toLocaleString(), tone: "text-lime" },
+    { icon: Zap, label: "Total XP", value: progress.xp.toLocaleString(), tone: "text-accent" },
     { icon: Flame, label: "Day streak", value: `${progress.streak} days`, tone: "text-gold" },
-    { icon: Gem, label: "Gems", value: progress.gems.toLocaleString(), tone: "text-violet" },
+    { icon: Gem, label: "Gems", value: progress.gems.toLocaleString(), tone: "text-teal" },
     { icon: BookOpenCheck, label: "Lessons", value: progress.lessonsCompleted.toLocaleString(), tone: "text-sky-400" },
   ];
 
@@ -34,7 +34,7 @@ export default async function ProfilePage() {
     <div>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-5">
-          <span className="grid size-20 place-items-center rounded-3xl bg-gradient-to-br from-lime/25 to-violet/25 font-display text-2xl font-extrabold text-lime">
+          <span className="grid size-20 place-items-center rounded-3xl bg-gradient-to-br from-accent/25 to-teal/25 font-display text-2xl font-extrabold text-accent">
             {initials(player.name)}
           </span>
           <div>
@@ -81,7 +81,7 @@ export default async function ProfilePage() {
         <h2 className="font-display text-lg font-bold">Recent activity</h2>
         {attempts.length === 0 ? (
           <p className="mt-3 text-sm text-slate-400">
-            No lessons yet. <Link href="/learn" className="font-bold text-lime hover:underline">Start your path →</Link>
+            No lessons yet. <Link href="/learn" className="font-bold text-accent hover:underline">Start your path →</Link>
           </p>
         ) : (
           <div className="mt-4 space-y-2">
@@ -91,7 +91,7 @@ export default async function ProfilePage() {
                 className="flex items-center justify-between rounded-xl border border-line bg-ink/40 px-4 py-3 text-sm"
               >
                 <span className="truncate font-semibold text-slate-300">{attempt.lessonKey}</span>
-                <span className="shrink-0 text-xs font-bold text-lime">
+                <span className="shrink-0 text-xs font-bold text-accent">
                   {attempt.correct}/{attempt.total} · +{attempt.xpEarned} XP
                 </span>
               </div>

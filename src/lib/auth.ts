@@ -18,7 +18,7 @@ export async function getViewer(): Promise<Viewer | null> {
     return {
       id: "preview-learner",
       name: "Preview Learner",
-      email: "preview@lumio.local",
+      email: "preview@kelma.local",
       imageUrl: null,
       verified: true,
       isPreview: true,

@@ -69,11 +69,11 @@ export function AppShell({ stats, children }: { stats: ShellStats; children: Rea
     <div className="min-h-screen lg:grid lg:grid-cols-[248px_1fr]">
       <aside className="sticky top-0 hidden h-screen flex-col border-r border-line bg-surface/50 px-4 py-6 lg:flex">
         <Link href="/learn" className="mb-8 flex items-center gap-2 px-2 font-display text-xl font-extrabold">
-          <span className="grid size-8 place-items-center rounded-xl bg-lime text-ink">
+          <span className="grid size-8 place-items-center rounded-xl bg-accent text-ink">
             <Sparkles className="size-4" />
           </span>
           {appConfig.name}
-          <span className="text-lime">.</span>
+          <span className="text-accent">.</span>
         </Link>
 
         <nav className="space-y-1">
@@ -86,7 +86,7 @@ export function AppShell({ stats, children }: { stats: ShellStats; children: Rea
                 className={cn(
                   "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold transition-colors",
                   active
-                    ? "bg-lime/12 text-lime"
+                    ? "bg-accent/12 text-accent"
                     : "text-slate-400 hover:bg-white/5 hover:text-white",
                 )}
               >
@@ -106,7 +106,7 @@ export function AppShell({ stats, children }: { stats: ShellStats; children: Rea
                 href={item.href}
                 className={cn(
                   "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold transition-colors",
-                  active ? "bg-lime/12 text-lime" : "text-slate-400 hover:bg-white/5 hover:text-white",
+                  active ? "bg-accent/12 text-accent" : "text-slate-400 hover:bg-white/5 hover:text-white",
                 )}
               >
                 <item.icon className="size-4" />
@@ -115,7 +115,7 @@ export function AppShell({ stats, children }: { stats: ShellStats; children: Rea
             );
           })}
           <div className="mt-4 flex items-center gap-3 rounded-xl border border-line bg-ink/50 p-3">
-            <span className="grid size-9 place-items-center rounded-full bg-violet/20 text-xs font-extrabold text-violet">
+            <span className="grid size-9 place-items-center rounded-full bg-teal/20 text-xs font-extrabold text-teal">
               {initials(stats.name)}
             </span>
             <div className="min-w-0">
@@ -132,22 +132,22 @@ export function AppShell({ stats, children }: { stats: ShellStats; children: Rea
         <header className="sticky top-0 z-30 border-b border-line/70 bg-ink/80 backdrop-blur-xl">
           <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
             <Link href="/learn" className="flex items-center gap-2 font-display text-lg font-extrabold lg:hidden">
-              <span className="grid size-7 place-items-center rounded-lg bg-lime text-ink">
+              <span className="grid size-7 place-items-center rounded-lg bg-accent text-ink">
                 <Sparkles className="size-3.5" />
               </span>
               {appConfig.name}
             </Link>
 
             <div className="hidden items-center gap-5 sm:flex">
-              <Stat icon={Heart} value={stats.plan === "pro" ? "∞" : stats.hearts} tone="text-rose" label="Hearts" />
-              <Stat icon={Gem} value={stats.gems} tone="text-violet" label="Gems" />
+              <Stat icon={Heart} value={stats.plan === "pro" ? "∞" : stats.hearts} tone="text-coral" label="Hearts" />
+              <Stat icon={Gem} value={stats.gems} tone="text-teal" label="Gems" />
               <Stat icon={Flame} value={`${stats.streak}🔥`} tone="text-gold" label="Day streak" />
-              <Stat icon={Zap} value={stats.xp} tone="text-lime" label="Total XP" />
+              <Stat icon={Zap} value={stats.xp} tone="text-accent" label="Total XP" />
             </div>
 
             <div className="flex items-center gap-2 sm:hidden">
-              <Stat icon={Heart} value={stats.plan === "pro" ? "∞" : stats.hearts} tone="text-rose" label="Hearts" />
-              <Stat icon={Gem} value={stats.gems} tone="text-violet" label="Gems" />
+              <Stat icon={Heart} value={stats.plan === "pro" ? "∞" : stats.hearts} tone="text-coral" label="Hearts" />
+              <Stat icon={Gem} value={stats.gems} tone="text-teal" label="Gems" />
               <Stat icon={Flame} value={stats.streak} tone="text-gold" label="Streak" />
             </div>
 
@@ -184,7 +184,7 @@ export function AppShell({ stats, children }: { stats: ShellStats; children: Rea
               href={item.href}
               className={cn(
                 "flex flex-col items-center gap-1 py-2.5 text-[10px] font-bold",
-                active ? "text-lime" : "text-slate-500",
+                active ? "text-accent" : "text-slate-500",
               )}
             >
               <item.icon className="size-5" />

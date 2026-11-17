@@ -1,8 +1,8 @@
 export const appConfig = {
-  name: "Lumio",
-  tagline: "Small lessons. Giant streaks.",
+  name: "Kelma",
+  tagline: "Words that stay with you.",
   description:
-    "A gamified language laboratory that builds every lesson from live translation, dictionary and open vocabulary data.",
+    "A calm, design-led language studio that builds every lesson from live translation, dictionary and open vocabulary data.",
   maxHearts: 5,
   heartRefillMinutes: 10,
 } as const;
@@ -39,7 +39,7 @@ export const shopItems: ShopItem[] = [
   },
   {
     id: "pro-subscription",
-    name: "Lumio Pro",
+    name: "Kelma Pro",
     description: "Unlimited hearts, 1.5× XP and every advanced drill. Pay in DZD with CIB or Edahabia.",
     price: 0,
     kind: "pro",

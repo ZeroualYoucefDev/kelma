@@ -1,22 +1,22 @@
-# Lumio — a live-data, gamified language learning platform
+# Kelma — a live-data, gamified language learning platform
 
 > Small lessons. Giant streaks.
 
-Lumio is a production-oriented, Duolingo-style language learning web application built **entirely with Next.js 16 App Router**. It combines a polished, high-contrast gamified UI with a curriculum that is assembled **at runtime from public internet APIs and external language datasets** — there is no bundled vocabulary list, no hardcoded translation table and no mock lesson content anywhere in the repository.
+Kelma is a production-oriented, Duolingo-style language learning web application built **entirely with Next.js 16 App Router**. It combines a polished, high-contrast gamified UI with a curriculum that is assembled **at runtime from public internet APIs and external language datasets** — there is no bundled vocabulary list, no hardcoded translation table and no mock lesson content anywhere in the repository.
 
-This project lives in `lumio/` so it does not disturb the pre-existing portfolio and Laravel application in the workspace root.
+This project lives in `kelma/` so it does not disturb the pre-existing portfolio and Laravel application in the workspace root.
 
 ---
 
 ## 1. Project overview
 
-Lumio turns a language into a game path:
+Kelma turns a language into a game path:
 
 - **Sequential units** with winding, alternating lesson nodes, lock states and completion feedback.
 - **Four exercise families** — translation, reverse translation, listening and dictionary meaning — generated from live word, translation and dictionary data.
 - **Native-sounding audio** produced at runtime by the browser Web Speech API in the target language's locale.
 - **Hearts** (5 max, one heart per 10 minutes), **XP**, **levels**, **gems**, **daily streaks**, **streak freezes** and **daily quests**, all persisted in PostgreSQL.
-- **A virtual shop** where gems buy heart refills and streak freezes, and where **Lumio Pro** is purchased through **Chargily Pay API v2** in DZD using CIB or Edahabia cards.
+- **A virtual shop** where gems buy heart refills and streak freezes, and where **Kelma Pro** is purchased through **Chargily Pay API v2** in DZD using CIB or Edahabia cards.
 - **Strict passwordless onboarding** — Google SSO, email magic links and phone OTP only. A session cannot enter the dashboard until an email or phone factor is verified; the confirmation flow lands directly on `/learn`.
 
 ### The "no dummy content" rule
@@ -132,7 +132,7 @@ cp .env.example .env.local
 
 ```dotenv
 NEXT_PUBLIC_APP_URL=http://localhost:3100
-DATABASE_URL=postgresql://user:password@host:5432/lumio?sslmode=require
+DATABASE_URL=postgresql://user:password@host:5432/kelma?sslmode=require
 
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
@@ -156,7 +156,7 @@ LINGUISTICS_CACHE_TTL_SECONDS=86400
 ## 5. Installation and local development
 
 ```bash
-cd lumio
+cd kelma
 npm install
 cp .env.example .env.local      # then edit with real keys
 npm run db:push                 # create tables from src/db/schema.ts
@@ -197,7 +197,7 @@ If you do not yet have Clerk or database keys, you can still run `npm run dev` a
 ## 6. Deployment (Vercel)
 
 1. Push the repository to GitHub.
-2. In Vercel, **Add New → Project** and select the repository. Because the app is in a subdirectory, set the **Root Directory** to `lumio`.
+2. In Vercel, **Add New → Project** and select the repository. Because the app is in a subdirectory, set the **Root Directory** to `kelma`.
 3. Framework preset: **Next.js** (Vercel detects Next 16). Build command `npm run build`, output auto-detected.
 4. Add every variable from `.env.example` to Vercel **Project Settings → Environment Variables**.
    - Set `NEXT_PUBLIC_APP_URL=https://<your-deployment>.vercel.app`.
@@ -234,7 +234,7 @@ If you do not yet have Clerk or database keys, you can still run `npm run dev` a
 ## 8. Repository layout
 
 ```
-lumio/
+kelma/
 ├── src/app                 # App Router routes
 ├── src/actions             # Server Actions (progress, shop, settings)
 ├── src/components          # UI, marketing, dashboard, shop, auth

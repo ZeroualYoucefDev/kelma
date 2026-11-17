@@ -26,8 +26,8 @@ export default async function LearnPage() {
     curriculum = await buildCurriculum(player.sourceLanguage, player.targetLanguage);
   } catch (error) {
     return (
-      <div className="rounded-2xl border border-rose/30 bg-rose/8 p-6">
-        <h1 className="font-display text-xl font-bold text-rose">Live curriculum unavailable</h1>
+      <div className="rounded-2xl border border-coral/30 bg-coral/8 p-6">
+        <h1 className="font-display text-xl font-bold text-coral">Live curriculum unavailable</h1>
         <p className="mt-2 text-sm text-slate-300">
           {error instanceof Error ? error.message : "The upstream language dataset did not respond."}
         </p>
@@ -40,7 +40,7 @@ export default async function LearnPage() {
     <div>
       <section className="mb-12 flex flex-wrap items-end justify-between gap-6">
         <div>
-          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-lime">
+          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
             <Sparkles className="size-3.5" /> Your path
           </p>
           <h1 className="mt-2 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
@@ -62,7 +62,7 @@ export default async function LearnPage() {
           <Progress
             value={(level.intoLevel / level.needed) * 100}
             className="mt-3 h-2"
-            indicatorClassName="bg-gradient-to-r from-lime to-violet"
+            indicatorClassName="bg-gradient-to-r from-accent to-teal"
           />
           <p className="mt-2 text-[11px] text-slate-500">
             {level.needed - level.intoLevel} XP until level {level.level + 1}

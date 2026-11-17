@@ -37,7 +37,7 @@ export async function fetchJson<T>(
     ...init,
     headers: {
       accept: "application/json",
-      "user-agent": "Lumio/1.0 (+https://github.com)",
+      "user-agent": "Kelma/1.0 (+https://github.com)",
       ...init?.headers,
     },
     signal: init?.signal ?? AbortSignal.timeout(timeoutMs),
@@ -53,7 +53,7 @@ export async function fetchJson<T>(
 /** Cached text fetch for newline-delimited public datasets. */
 export async function fetchText(url: string, timeoutMs = 10_000): Promise<string> {
   const response = await fetch(url, {
-    headers: { "user-agent": "Lumio/1.0 (+https://github.com)" },
+    headers: { "user-agent": "Kelma/1.0 (+https://github.com)" },
     signal: AbortSignal.timeout(timeoutMs),
   });
   if (!response.ok) {

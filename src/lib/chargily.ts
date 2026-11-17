@@ -56,7 +56,7 @@ export async function createProCheckout(input: {
     failure_url: `${appUrl}/settings?checkout=failed`,
     webhook_endpoint: `${appUrl}/api/webhooks/chargily`,
     payment_method: input.method ?? "cib",
-    description: "Lumio Pro — unlimited hearts and advanced drills",
+    description: "Kelma Pro — unlimited hearts and advanced drills",
     locale: "en",
     chargily_pay_fees_allocation: "merchant",
     metadata: {

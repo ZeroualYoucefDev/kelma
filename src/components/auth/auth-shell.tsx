@@ -14,12 +14,12 @@ export function AuthShell({
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-5 py-12">
       <div className="pointer-events-none absolute inset-0 grid-glow" />
-      <div className="pointer-events-none absolute left-1/2 top-1/2 size-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-lime/8 blur-[140px]" />
+      <div className="pointer-events-none absolute left-1/2 top-1/2 size-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/8 blur-[140px]" />
 
       <div className="relative grid w-full max-w-5xl overflow-hidden rounded-3xl border border-line bg-surface/70 shadow-2xl backdrop-blur-xl md:grid-cols-2">
-        <div className="hidden flex-col justify-between border-r border-line bg-gradient-to-br from-lime/12 via-surface to-violet/12 p-10 md:flex">
+        <div className="hidden flex-col justify-between border-r border-line bg-gradient-to-br from-accent/12 via-surface to-teal/12 p-10 md:flex">
           <Link href="/" className="flex items-center gap-2 font-display text-xl font-extrabold">
-            <span className="grid size-8 place-items-center rounded-xl bg-lime text-ink">
+            <span className="grid size-8 place-items-center rounded-xl bg-accent text-ink">
               <Sparkles className="size-4" />
             </span>
             {appConfig.name}
@@ -32,7 +32,7 @@ export function AuthShell({
               Passwordless by design. Google, a magic link, or a one-time code — then straight into your dashboard.
             </p>
           </div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-lime">
+          <div className="flex items-center gap-2 text-xs font-semibold text-accent">
             <ShieldCheck className="size-4" /> Verified accounts only
           </div>
         </div>
@@ -40,7 +40,7 @@ export function AuthShell({
         <div className="p-6 sm:p-10">
           <Link
             href="/"
-            className="mb-8 inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-lime"
+            className="mb-8 inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-accent"
           >
             <ArrowLeft className="size-3.5" /> Back to home
           </Link>

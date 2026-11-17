@@ -41,7 +41,7 @@ export function SettingsForm({
   }
 
   const selectClass =
-    "h-11 w-full rounded-xl border border-line bg-surface-2 px-3 text-sm text-white focus:border-lime focus:outline-none";
+    "h-11 w-full rounded-xl border border-line bg-surface-2 px-3 text-sm text-white focus:border-accent focus:outline-none";
 
   return (
     <form onSubmit={submit} className="space-y-6">

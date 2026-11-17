@@ -67,14 +67,14 @@ export default async function QuestsPage() {
           return (
             <div
               key={quest.id}
-              className={`rounded-2xl border p-6 ${done ? "border-lime/35 bg-lime/5" : "border-line bg-surface/60"}`}
+              className={`rounded-2xl border p-6 ${done ? "border-accent/35 bg-accent/5" : "border-line bg-surface/60"}`}
             >
               <div className="flex items-start justify-between">
-                <span className="grid size-10 place-items-center rounded-xl bg-violet/15 text-violet">
+                <span className="grid size-10 place-items-center rounded-xl bg-teal/15 text-teal">
                   <quest.icon className="size-5" />
                 </span>
                 {done ? (
-                  <Badge variant="lime">
+                  <Badge variant="accent">
                     <Check className="size-3" /> Complete
                   </Badge>
                 ) : (

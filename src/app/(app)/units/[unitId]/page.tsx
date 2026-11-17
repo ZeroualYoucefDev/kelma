@@ -39,7 +39,7 @@ export default async function UnitDetailPage({
         </Link>
       </Button>
 
-      <p className="text-xs font-bold uppercase tracking-[0.2em] text-violet">Unit {unit.index}</p>
+      <p className="text-xs font-bold uppercase tracking-[0.2em] text-teal">Unit {unit.index}</p>
       <h1 className="mt-2 font-display text-4xl font-extrabold">{unit.title}</h1>
       <p className="mt-3 max-w-xl text-sm text-slate-400">{unit.description}</p>
 
@@ -61,7 +61,7 @@ export default async function UnitDetailPage({
               <span
                 className={cn(
                   "grid size-10 place-items-center rounded-xl font-display font-extrabold",
-                  done ? "bg-lime text-ink" : "bg-violet/15 text-violet",
+                  done ? "bg-accent text-ink" : "bg-teal/15 text-teal",
                 )}
               >
                 {done ? <Check className="size-5" /> : unlocked ? index + 1 : <Lock className="size-4" />}

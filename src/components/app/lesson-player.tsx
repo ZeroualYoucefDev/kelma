@@ -124,8 +124,8 @@ export function LessonPlayer({
           <X className="size-5" />
         </button>
         <Progress value={(index / total) * 100} className="h-3" />
-        <span className="flex items-center gap-1.5 text-sm font-extrabold text-rose">
-          <Heart className="size-4 fill-rose" />
+        <span className="flex items-center gap-1.5 text-sm font-extrabold text-coral">
+          <Heart className="size-4 fill-coral" />
           {isPro ? "∞" : remainingHearts}
         </span>
       </div>
@@ -133,7 +133,7 @@ export function LessonPlayer({
       {!finished && exercise && (
         <div className="animate-pop rounded-3xl border border-line bg-surface/80 p-6 shadow-2xl sm:p-9">
           <div className="mb-7 flex items-center justify-between">
-            <span className="rounded-full border border-lime/25 bg-lime/10 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-lime">
+            <span className="rounded-full border border-accent/25 bg-accent/10 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-accent">
               {exercise.kind}
             </span>
             <span className="text-xs font-bold text-slate-500">
@@ -148,7 +148,7 @@ export function LessonPlayer({
           {exercise.kind === "listen" ? (
             <button
               onClick={playAudio}
-              className="mx-auto my-8 flex size-28 items-center justify-center rounded-full border-2 border-lime/40 bg-lime/10 text-lime transition-transform hover:scale-105 active:scale-95"
+              className="mx-auto my-8 flex size-28 items-center justify-center rounded-full border-2 border-accent/40 bg-accent/10 text-accent transition-transform hover:scale-105 active:scale-95"
               aria-label="Play audio"
             >
               <Volume2 className="size-11" />
@@ -166,7 +166,7 @@ export function LessonPlayer({
                       exercise.kind === "translate" ? "en-US" : lesson.target.locale,
                     )
                   }
-                  className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-lime"
+                  className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-accent"
                 >
                   <Volume2 className="size-3.5" /> Hear it
                 </button>
@@ -188,9 +188,9 @@ export function LessonPlayer({
                   className={cn(
                     "flex items-center justify-between rounded-xl border-2 px-4 py-4 text-left text-sm font-bold transition-all",
                     status === "idle" &&
-                      "border-line bg-surface-2/70 text-slate-200 hover:border-lime/60 hover:bg-surface-2",
-                    status !== "idle" && isAnswer && "border-lime bg-lime/15 text-lime",
-                    status === "wrong" && isSelected && !isAnswer && "border-rose bg-rose/15 text-rose",
+                      "border-line bg-surface-2/70 text-slate-200 hover:border-accent/60 hover:bg-surface-2",
+                    status !== "idle" && isAnswer && "border-accent bg-accent/15 text-accent",
+                    status === "wrong" && isSelected && !isAnswer && "border-coral bg-coral/15 text-coral",
                     status !== "idle" && !isAnswer && !isSelected && "opacity-40",
                   )}
                 >
@@ -202,9 +202,9 @@ export function LessonPlayer({
           </div>
 
           <div className="mt-7 flex min-h-7 items-center justify-center text-sm font-bold">
-            {status === "correct" && <span className="animate-pop text-lime">Nice! Keep going.</span>}
+            {status === "correct" && <span className="animate-pop text-accent">Nice! Keep going.</span>}
             {status === "wrong" && (
-              <span className="animate-pop text-rose">
+              <span className="animate-pop text-coral">
                 Not quite — the answer was “{exercise.options[exercise.answerIndex]}”.
               </span>
             )}
@@ -217,7 +217,7 @@ export function LessonPlayer({
           <div className="animate-pop w-full max-w-md rounded-3xl border border-line bg-surface p-8 text-center shadow-2xl">
             {outOfHearts ? (
               <>
-                <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-rose/15 text-3xl">💔</div>
+                <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-coral/15 text-3xl">💔</div>
                 <h2 className="mt-5 font-display text-2xl font-extrabold">Out of hearts</h2>
                 <p className="mt-2 text-sm text-slate-400">
                   Refill in the shop, upgrade to Pro for unlimited hearts, or come back in ten minutes.
@@ -231,7 +231,7 @@ export function LessonPlayer({
               </>
             ) : (
               <>
-                <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-lime/15 text-3xl">
+                <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-accent/15 text-3xl">
                   {result?.perfect ? "🏆" : "🎉"}
                 </div>
                 <h2 className="mt-5 font-display text-2xl font-extrabold">
@@ -242,8 +242,8 @@ export function LessonPlayer({
                 </p>
                 <div className="mt-6 grid grid-cols-3 gap-2">
                   {[
-                    { label: "XP", value: `+${result?.xp ?? 0}`, tone: "text-lime" },
-                    { label: "Gems", value: `+${result?.gems ?? 0}`, tone: "text-violet" },
+                    { label: "XP", value: `+${result?.xp ?? 0}`, tone: "text-accent" },
+                    { label: "Gems", value: `+${result?.gems ?? 0}`, tone: "text-teal" },
                     { label: "Streak", value: `${result?.streak ?? 0}`, tone: "text-gold" },
                   ].map((item) => (
                     <div key={item.label} className="rounded-xl border border-line bg-ink/50 p-3">

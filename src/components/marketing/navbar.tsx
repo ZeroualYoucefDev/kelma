@@ -20,11 +20,11 @@ export function Navbar() {
     <header className="fixed inset-x-0 top-0 z-40">
       <div className="mx-auto mt-3 flex max-w-6xl items-center justify-between rounded-2xl border border-line/70 bg-surface/70 px-4 py-3 backdrop-blur-xl sm:px-6">
         <Link href="/" className="flex items-center gap-2 font-display text-xl font-extrabold tracking-tight">
-          <span className="grid size-8 place-items-center rounded-xl bg-lime text-ink">
+          <span className="grid size-8 place-items-center rounded-xl bg-accent text-ink">
             <Sparkles className="size-4" />
           </span>
           {appConfig.name}
-          <span className="text-lime">.</span>
+          <span className="text-accent">.</span>
         </Link>
 
         <nav className="hidden items-center gap-7 md:flex">
@@ -32,7 +32,7 @@ export function Navbar() {
             <a
               key={link.href}
               href={link.href}
-              className="text-sm font-semibold text-slate-300 transition-colors hover:text-lime"
+              className="text-sm font-semibold text-slate-300 transition-colors hover:text-accent"
             >
               {link.label}
             </a>
