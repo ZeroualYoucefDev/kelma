@@ -2,6 +2,7 @@ import { CreditCard, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { CheckoutButtons } from "@/components/shop/shop-actions";
 import { SettingsForm } from "@/components/settings/settings-form";
+import { AvatarPicker } from "@/components/profile/avatar-picker";
 import { clerkConfigured, getViewer } from "@/lib/auth";
 import { getPlayer } from "@/lib/data";
 import { getLanguages } from "@/services/languages";
@@ -30,6 +31,13 @@ export default async function SettingsPage() {
           <p className="mb-6 mt-1 text-sm text-slate-400">
             Target-language names are resolved live from an ISO dataset.
           </p>
+          <div className="mb-6 border-b border-line pb-6">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Avatar</h3>
+            <div className="mt-3">
+              <AvatarPicker current={player.avatar} name={player.name} />
+            </div>
+          </div>
+
           <SettingsForm
             languages={languages}
             clerkEnabled={clerkConfigured}
@@ -37,6 +45,8 @@ export default async function SettingsPage() {
               name: player.name,
               sourceLanguage: player.sourceLanguage,
               targetLanguage: player.targetLanguage,
+              dailyGoalMinutes: player.dailyGoalMinutes,
+              learningReason: player.learningReason ?? "fun",
             }}
           />
         </div>
@@ -75,7 +85,7 @@ export default async function SettingsPage() {
               <ShieldCheck className="size-4 text-accent" /> Verification
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-slate-400">
-              Only verified Google or one-time email-code sessions can reach the dashboard.
+              Only verified Google, email magic-link or phone-OTP sessions can reach the dashboard.
               Password registration is not offered anywhere in the product.
             </p>
             <Badge variant="accent" className="mt-4">Verified account</Badge>

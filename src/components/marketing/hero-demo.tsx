@@ -10,11 +10,13 @@ export type HeroPair = { source: string; translated: string };
 export function HeroDemo({
   pairs,
   language,
-  locale,
+  sourceLocale,
+  targetLocale,
 }: {
   pairs: HeroPair[];
   language: string;
-  locale: string;
+  sourceLocale: string;
+  targetLocale: string;
 }) {
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
@@ -51,6 +53,7 @@ export function HeroDemo({
       <div className="rounded-3xl border border-line bg-surface/90 p-6 shadow-2xl backdrop-blur-xl sm:p-7">
         <div className="mb-6 flex items-center justify-between text-xs font-bold uppercase tracking-widest text-slate-500">
           <span>Live lesson · {language}</span>
+          <span className="text-violet">{sourceLocale} → {targetLocale}</span>
           <span className="text-accent">+10 XP</span>
         </div>
 

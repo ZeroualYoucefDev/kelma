@@ -38,6 +38,10 @@ const SCHEMA_SQL = `
     image_url TEXT,
     source_language TEXT NOT NULL DEFAULT 'en',
     target_language TEXT NOT NULL DEFAULT 'es',
+    avatar TEXT NOT NULL DEFAULT 'fox',
+    daily_goal_minutes INTEGER NOT NULL DEFAULT 10,
+    learning_reason TEXT,
+    onboarding_completed INTEGER NOT NULL DEFAULT 0,
     plan TEXT NOT NULL DEFAULT 'free',
     plan_expires_at INTEGER,
     created_at INTEGER NOT NULL,
@@ -58,6 +62,15 @@ const SCHEMA_SQL = `
     lessons_completed INTEGER NOT NULL DEFAULT 0,
     updated_at INTEGER NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS heart_events (
+    id TEXT PRIMARY KEY NOT NULL,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    lesson_key TEXT NOT NULL,
+    hearts_after INTEGER NOT NULL,
+    created_at INTEGER NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS heart_events_user_idx ON heart_events (user_id);
 
   CREATE TABLE IF NOT EXISTS lesson_attempts (
     id TEXT PRIMARY KEY NOT NULL,
@@ -94,6 +107,24 @@ function createDb() {
     sqlite.exec("PRAGMA journal_mode = WAL;");
   }
   sqlite.exec(SCHEMA_SQL);
+
+  // Existing databases created before onboarding need their new columns.
+  const userColumns = new Set(
+    (sqlite.prepare("PRAGMA table_info(users)").all() as Array<{ name: string }>).map(
+      (column) => column.name,
+    ),
+  );
+  const addUserColumn: Record<string, string> = {
+    avatar: "ALTER TABLE users ADD COLUMN avatar TEXT NOT NULL DEFAULT 'fox'",
+    daily_goal_minutes:
+      "ALTER TABLE users ADD COLUMN daily_goal_minutes INTEGER NOT NULL DEFAULT 10",
+    learning_reason: "ALTER TABLE users ADD COLUMN learning_reason TEXT",
+    onboarding_completed:
+      "ALTER TABLE users ADD COLUMN onboarding_completed INTEGER NOT NULL DEFAULT 0",
+  };
+  for (const [column, statement] of Object.entries(addUserColumn)) {
+    if (!userColumns.has(column)) sqlite.exec(statement);
+  }
 
   const cleanParams = (params: unknown[]) =>
     params.map((value): any => (value === undefined ? null : value));

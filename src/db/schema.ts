@@ -16,6 +16,12 @@ export const users = sqliteTable(
     imageUrl: text("image_url"),
     sourceLanguage: text("source_language").notNull().default("en"),
     targetLanguage: text("target_language").notNull().default("es"),
+    avatar: text("avatar").notNull().default("fox"),
+    dailyGoalMinutes: integer("daily_goal_minutes").notNull().default(10),
+    learningReason: text("learning_reason"),
+    onboardingCompleted: integer("onboarding_completed", { mode: "boolean" })
+      .notNull()
+      .default(false),
     plan: text("plan").notNull().default("free"), // free | pro
     planExpiresAt: timestamp("plan_expires_at"),
     createdAt: timestamp("created_at").notNull().$defaultFn(() => new Date()),
@@ -41,6 +47,19 @@ export const progress = sqliteTable("progress", {
   lessonsCompleted: integer("lessons_completed").notNull().default(0),
   updatedAt: timestamp("updated_at").notNull().$defaultFn(() => new Date()),
 });
+
+export const heartEvents = sqliteTable(
+  "heart_events",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    lessonKey: text("lesson_key").notNull(),
+    heartsAfter: integer("hearts_after").notNull(),
+    createdAt: timestamp("created_at").notNull().$defaultFn(() => new Date()),
+  },
+);
 
 export const lessonAttempts = sqliteTable("lesson_attempts", {
   id: text("id").primaryKey(),

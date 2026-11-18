@@ -11,15 +11,25 @@ import { seededShuffle } from "./http";
 import { translateBatch } from "./translation";
 import { getWordsForLesson, getWordPoolSize } from "./words";
 
-/** Curriculum shape is configuration; every word inside it is fetched live. */
+/** Structural configuration only. Every vocabulary item is fetched live. */
 const UNITS = 6;
 const LESSONS_PER_UNIT = 4;
 const WORDS_PER_UNIT = LESSONS_PER_UNIT * 4;
 
+const UNIT_TITLES = [
+  "First sparks",
+  "Word playground",
+  "Say it out loud",
+  "Story threads",
+  "Quick fire",
+  "Mastery lap",
+] as const;
+
+const LESSON_TITLES = ["Warm up", "Mix & match", "Sound check", "Mini quest"] as const;
+
 /**
- * Assemble a sequential unit path. Unit and lesson metadata are structural;
- * all vocabulary is pulled from the live frequency dataset, so no words are
- * committed to this repository.
+ * Assemble the curriculum map. Unit and lesson metadata are structural; all
+ * words are pulled from the live frequency dataset, never from this file.
  */
 export async function buildCurriculum(
   sourceCode = "en",
@@ -42,7 +52,7 @@ export async function buildCurriculum(
         id: `${unitId}-lesson-${lessonIndex + 1}`,
         unitId,
         index: lessonIndex + 1,
-        title: `Lesson ${lessonIndex + 1} · ${target.name}`,
+        title: LESSON_TITLES[lessonIndex] ?? `Lesson ${lessonIndex + 1}`,
         words: words.slice(lessonIndex * 4, lessonIndex * 4 + 4),
       });
     }
@@ -50,8 +60,8 @@ export async function buildCurriculum(
     units.push({
       id: unitId,
       index: unitIndex + 1,
-      title: `Unit ${unitIndex + 1} · ${target.name}`,
-      description: `${words.length} live words from the open vocabulary dataset, broken into bite-sized lessons.`,
+      title: UNIT_TITLES[unitIndex] ?? `Unit ${unitIndex + 1}`,
+      description: `${words.length} live words from the open vocabulary dataset, turned into ${LESSONS_PER_UNIT} playful rounds.`,
       lessons,
     });
   }
@@ -65,16 +75,20 @@ function makeOptions(
   seed: string,
 ): { options: string[]; answerIndex: number } {
   const unique = [...new Set(distractors.filter((item) => item !== correct))].slice(0, 3);
-  // Upstream providers sometimes return fewer than four distinct words. The
-  // placeholder is an option label, never a vocabulary answer.
-  while (unique.length < 3) unique.push(`Option ${unique.length + 1}`);
+  if (unique.length < 3) {
+    throw new Error("The live translation pool did not provide enough distinct answers.");
+  }
   const options = seededShuffle([correct, ...unique], seed);
   return { options, answerIndex: options.indexOf(correct) };
 }
 
 /**
  * Generate a playable lesson from live translations and dictionary metadata.
- * Every option (correct or distractor) originates from an upstream API.
+ *
+ * The English frequency list is the canonical word source. Every displayed
+ * word is translated from that list into the learner's native language and
+ * into the active target language, so changing either language changes what
+ * the learner sees — and no language is structurally locked.
  */
 export async function buildLesson(
   sourceCode: string,
@@ -88,66 +102,95 @@ export async function buildLesson(
 
   if (!unit || !plan) throw new Error("Lesson not found in the live curriculum.");
 
-  // Ask for a wider live slice so a failed upstream translation never blocks a lesson.
-  const widerPool = await getWordsForLesson(lessonId, 10);
-  const translations = await translateBatch(widerPool, sourceCode, targetCode);
-  const usable = translations.filter(
-    (item): item is { source: string; translated: string } => Boolean(item.translated),
-  );
+  const baseWords = await getWordsForLesson(lessonId, 12);
+  const [nativeRows, targetRows] = await Promise.all([
+    sourceCode === "en"
+      ? Promise.resolve(baseWords.map((word) => ({ source: word, translated: word })))
+      : translateBatch(baseWords, "en", sourceCode),
+    translateBatch(baseWords, "en", targetCode),
+  ]);
 
-  if (usable.length < 4) {
-    throw new Error("The translation provider did not return enough words for this lesson.");
+  const pairs: Array<{ base: string; native: string; target: string }> = [];
+  const seenTargets = new Set<string>();
+  const seenNatives = new Set<string>();
+
+  for (let index = 0; index < baseWords.length; index += 1) {
+    const base = baseWords[index];
+    const native = nativeRows[index]?.translated?.trim();
+    const target = targetRows[index]?.translated?.trim();
+    if (!native || !target) continue;
+    if (native.toLowerCase() === target.toLowerCase()) continue;
+
+    const nativeKey = native.toLowerCase();
+    const targetKey = target.toLowerCase();
+    if (seenNatives.has(nativeKey) || seenTargets.has(targetKey)) continue;
+
+    seenNatives.add(nativeKey);
+    seenTargets.add(targetKey);
+    pairs.push({ base, native, target });
+    if (pairs.length === 5) break;
   }
 
-  const pairs = usable.slice(0, 4);
-  const sourceWords = pairs.map((pair) => pair.source);
-  const targetWords = pairs.map((pair) => pair.translated);
-  const dictionary = await lookupWords(sourceWords);
+  if (pairs.length < 4) {
+    throw new Error("The translation provider did not return enough distinct live words.");
+  }
+
+  const chosen = pairs.slice(0, 4);
+  const nativeWords = chosen.map((pair) => pair.native);
+  const targetWords = chosen.map((pair) => pair.target);
+  const dictionary = await lookupWords(chosen.map((pair) => pair.base));
 
   const exercises: Exercise[] = [];
 
-  pairs.forEach((pair, index) => {
+  chosen.forEach((pair, index) => {
     const seed = `${lessonId}:${index}`;
 
     exercises.push({
       id: `${seed}:translate`,
       kind: "translate",
-      prompt: pair.source,
-      question: `Translate “${pair.source}” into ${curriculum.target.name}`,
-      ...makeOptions(pair.translated, targetWords, `${seed}:translate`),
-      note: "Pick the translation that sounds right.",
+      prompt: pair.native,
+      question: `What does “${pair.native}” mean in ${curriculum.target.name}?`,
+      ...makeOptions(pair.target, targetWords, `${seed}:translate`),
+      speak: { text: pair.native, locale: curriculum.source.locale },
+      note: `${curriculum.source.emoji} ${curriculum.source.name} → ${curriculum.target.emoji} ${curriculum.target.name}`,
     });
 
     exercises.push({
       id: `${seed}:reverse`,
       kind: "reverse",
-      prompt: pair.translated,
-      question: `What does “${pair.translated}” mean?`,
-      ...makeOptions(pair.source, sourceWords, `${seed}:reverse`),
-      note: `From ${curriculum.target.name} to ${curriculum.source.name}`,
+      prompt: pair.target,
+      question: `What does “${pair.target}” mean in ${curriculum.source.name}?`,
+      ...makeOptions(pair.native, nativeWords, `${seed}:reverse`),
+      speak: { text: pair.target, locale: curriculum.target.locale },
+      note: `${curriculum.target.emoji} ${curriculum.target.name} → ${curriculum.source.emoji} ${curriculum.source.name}`,
     });
 
     exercises.push({
       id: `${seed}:listen`,
       kind: "listen",
       prompt: "🔊",
-      question: "Listen and choose the correct meaning",
-      ...makeOptions(pair.source, sourceWords, `${seed}:listen`),
-      speak: { text: pair.translated, locale: curriculum.target.locale },
-      note: "Tap the speaker to hear it again.",
+      question: `Listen and choose the ${curriculum.source.name} meaning`,
+      ...makeOptions(pair.native, nativeWords, `${seed}:listen`),
+      speak: { text: pair.target, locale: curriculum.target.locale },
+      note: `Spoken in ${curriculum.target.name} · ${curriculum.target.locale}`,
     });
   });
 
-  const definitionEntry = dictionary.find((entry) => entry.definition && entry.audioUrl);
-  if (definitionEntry && sourceWords.includes(definitionEntry.word)) {
-    exercises.push({
-      id: `${lessonId}:meaning`,
-      kind: "meaning",
-      prompt: definitionEntry.definition ?? "",
-      question: "Which word matches this definition?",
-      ...makeOptions(definitionEntry.word, sourceWords, `${lessonId}:meaning`),
-      note: definitionEntry.partOfSpeech ? `A ${definitionEntry.partOfSpeech}` : undefined,
-    });
+  // Dictionary definitions are English-only upstream, so this round is shown
+  // only when English is the learner's native language.
+  if (sourceCode === "en") {
+    const definitionEntry = dictionary.find((entry) => entry.definition && nativeWords.includes(entry.word));
+    if (definitionEntry) {
+      exercises.push({
+        id: `${lessonId}:meaning`,
+        kind: "meaning",
+        prompt: definitionEntry.definition ?? "",
+        question: "Which word matches this definition?",
+        ...makeOptions(definitionEntry.word, nativeWords, `${lessonId}:meaning`),
+        speak: { text: definitionEntry.word, locale: curriculum.source.locale },
+        note: definitionEntry.partOfSpeech ? `A ${definitionEntry.partOfSpeech}` : undefined,
+      });
+    }
   }
 
   return {

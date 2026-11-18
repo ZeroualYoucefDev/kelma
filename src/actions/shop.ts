@@ -1,14 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireViewer } from "@/lib/auth";
+import { requireOnboardedViewer } from "@/lib/auth";
 import { shopItems } from "@/lib/config";
 import { getProgressFor, saveProgress } from "@/lib/data";
 import { MAX_HEARTS } from "@/lib/gamification";
 
 /** Spend gems on a consumable. Pro checkout is handled by /api/checkout/chargily. */
 export async function purchaseItem(itemId: string): Promise<{ ok: boolean; message: string }> {
-  const viewer = await requireViewer();
+  const viewer = await requireOnboardedViewer();
   const item = shopItems.find((entry) => entry.id === itemId && entry.kind !== "pro");
   if (!item) return { ok: false, message: "Unknown item." };
 

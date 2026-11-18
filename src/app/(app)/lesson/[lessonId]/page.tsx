@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { notFound, redirect } from "next/navigation";
+import { Heart } from "lucide-react";
 import { LessonPlayer } from "@/components/app/lesson-player";
+import { Button } from "@/components/ui/button";
 import { getViewer } from "@/lib/auth";
 import { getPlayer, getProgressFor, isProUser } from "@/lib/data";
 import { refillHearts } from "@/lib/gamification";
@@ -16,15 +17,45 @@ export default async function LessonPage({
 }) {
   const { lessonId } = await params;
   const viewer = await getViewer();
-  if (!viewer) return null;
+  if (!viewer) redirect("/");
 
-  const [player, progress] = await Promise.all([
+  const [player, progress, isPro] = await Promise.all([
     getPlayer(viewer),
     getProgressFor(viewer.id),
+    isProUser(viewer.id),
   ]);
+  const hearts = refillHearts(progress.hearts, progress.heartsUpdatedAt);
 
-  const curriculum = await buildCurriculum(player.sourceLanguage, player.targetLanguage).catch(() => null);
-  const unit = curriculum?.units.find((item) => item.lessons.some((lesson) => lesson.id === lessonId));
+  if (!isPro && hearts.hearts <= 0) {
+    return (
+      <div className="mx-auto max-w-xl rounded-[2rem] border border-coral/30 bg-coral/[0.07] p-8 text-center">
+        <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-coral/15 text-3xl">
+          💔
+        </div>
+        <h1 className="mt-5 font-display text-2xl font-extrabold">Lessons are locked</h1>
+        <p className="mt-2 text-sm text-muted">
+          Refill your hearts with gems or go Pro to keep this streak alive.
+        </p>
+        <div className="mt-6 grid gap-2 sm:grid-cols-2">
+          <Button asChild variant="secondary">
+            <Link href="/learn">Back to cards</Link>
+          </Button>
+          <Button asChild>
+            <Link href="/shop">
+              <Heart className="size-4" /> Refill hearts
+            </Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const curriculum = await buildCurriculum(player.sourceLanguage, player.targetLanguage).catch(
+    () => null,
+  );
+  const unit = curriculum?.units.find((item) =>
+    item.lessons.some((lesson) => lesson.id === lessonId),
+  );
   if (!unit) notFound();
 
   const lesson = await buildLesson(
@@ -36,25 +67,17 @@ export default async function LessonPage({
 
   if (!lesson) {
     return (
-      <div className="mx-auto max-w-xl rounded-2xl border border-coral/30 bg-coral/8 p-6 text-center">
-        <h1 className="font-display text-xl font-bold text-coral">Live lesson unavailable</h1>
-        <p className="mt-2 text-sm text-slate-300">
+      <div className="mx-auto max-w-xl rounded-[2rem] border border-coral/30 bg-coral/[0.07] p-6 text-center">
+        <h1 className="font-display text-xl font-extrabold text-coral">Live lesson unavailable</h1>
+        <p className="mt-2 text-sm text-muted">
           A translation provider did not return enough data. Refresh to try fresh words.
         </p>
         <Button asChild className="mt-5">
-          <Link href="/learn">Back to path</Link>
+          <Link href="/learn">Back to cards</Link>
         </Button>
       </div>
     );
   }
 
-  const hearts = refillHearts(progress.hearts, progress.heartsUpdatedAt);
-
-  return (
-    <LessonPlayer
-      lesson={lesson}
-      hearts={hearts.hearts}
-      isPro={viewer.isPreview ? false : await isProUser(viewer.id)}
-    />
-  );
+  return <LessonPlayer lesson={lesson} />;
 }

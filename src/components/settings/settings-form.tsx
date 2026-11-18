@@ -6,7 +6,9 @@ import { SignOutButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { updateSettings } from "@/actions/settings";
+import { DAILY_GOALS, LEARNING_REASONS } from "@/lib/onboarding";
 import type { Language } from "@/services/languages";
+import { cn } from "@/lib/utils";
 
 export function SettingsForm({
   languages,
@@ -14,12 +16,20 @@ export function SettingsForm({
   clerkEnabled,
 }: {
   languages: Language[];
-  initial: { name: string; sourceLanguage: string; targetLanguage: string };
+  initial: {
+    name: string;
+    sourceLanguage: string;
+    targetLanguage: string;
+    dailyGoalMinutes: number;
+    learningReason: string;
+  };
   clerkEnabled: boolean;
 }) {
   const [name, setName] = useState(initial.name);
   const [source, setSource] = useState(initial.sourceLanguage);
   const [target, setTarget] = useState(initial.targetLanguage);
+  const [reason, setReason] = useState(initial.learningReason);
+  const [goal, setGoal] = useState(initial.dailyGoalMinutes);
   const [loading, setLoading] = useState(false);
 
   async function submit(event: React.FormEvent) {
@@ -30,6 +40,8 @@ export function SettingsForm({
         name,
         sourceLanguage: source,
         targetLanguage: target,
+        dailyGoalMinutes: goal,
+        learningReason: reason,
       });
       if (result.ok) toast.success(result.message);
       else toast.error(result.message);
@@ -70,6 +82,47 @@ export function SettingsForm({
               </option>
             ))}
           </select>
+        </div>
+      </div>
+
+      <div>
+        <Label htmlFor="reason">Why you are learning</Label>
+        <select
+          id="reason"
+          className={selectClass}
+          value={reason}
+          onChange={(event) => setReason(event.target.value)}
+        >
+          {LEARNING_REASONS.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <Label>Daily goal</Label>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {DAILY_GOALS.map((item) => {
+            const active = goal === item.minutes;
+            return (
+              <button
+                key={item.minutes}
+                type="button"
+                aria-pressed={active}
+                onClick={() => setGoal(item.minutes)}
+                className={cn(
+                  "rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors",
+                  active
+                    ? "border-accent bg-accent/10 text-accent"
+                    : "border-line bg-surface-2/60 text-slate-400 hover:text-white",
+                )}
+              >
+                {item.minutes} min
+              </button>
+            );
+          })}
         </div>
       </div>
 

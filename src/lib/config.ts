@@ -1,8 +1,8 @@
 export const appConfig = {
-  name: "Kelma",
-  tagline: "Words that stay with you.",
+  name: "kelma",
+  tagline: "Words that stick. Any language you choose.",
   description:
-    "A calm, design-led language studio that builds every lesson from live translation, dictionary and open vocabulary data.",
+    "A playful language studio that builds every lesson from live translation, dictionary and open vocabulary data.",
   maxHearts: 5,
   heartRefillMinutes: 10,
 } as const;

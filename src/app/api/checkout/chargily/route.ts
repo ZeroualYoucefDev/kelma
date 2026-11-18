@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireViewer } from "@/lib/auth";
+import { requireOnboardedViewer } from "@/lib/auth";
 import { createProCheckout, isChargilyConfigured, type PaymentMethod } from "@/lib/chargily";
 import { getPlayer } from "@/lib/data";
 
@@ -9,8 +9,7 @@ const METHODS: PaymentMethod[] = ["cib", "edahabia", "chargily_app"];
 
 export async function POST(request: Request) {
   try {
-    const viewer = await requireViewer();
-    const player = await getPlayer(viewer);
+    const viewer = await requireOnboardedViewer();
 
     if (!isChargilyConfigured()) {
       return NextResponse.json(
@@ -19,11 +18,12 @@ export async function POST(request: Request) {
       );
     }
 
-    const body = (await request.json().catch(() => ({}))) as { method?: string };
-    const method = METHODS.includes(body.method as PaymentMethod)
+    const body = (await request.json().catch(() => ({}))) as { method?: unknown };
+    const method: PaymentMethod = METHODS.includes(body.method as PaymentMethod)
       ? (body.method as PaymentMethod)
       : "cib";
 
+    const player = await getPlayer(viewer);
     const checkout = await createProCheckout({
       userId: viewer.id,
       email: player.email,
@@ -34,7 +34,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ url: checkout.checkout_url, id: checkout.id });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to create checkout.";
-    const status = message.includes("signed in") || message.includes("Verify") ? 401 : 400;
-    return NextResponse.json({ error: message }, { status });
+    const unauthorized =
+      message.includes("signed in") || message.includes("Verify") || message.includes("onboarding");
+    return NextResponse.json({ error: message }, { status: unauthorized ? 401 : 400 });
   }
 }

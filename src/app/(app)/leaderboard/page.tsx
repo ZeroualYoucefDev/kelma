@@ -2,8 +2,9 @@ import Link from "next/link";
 import { Crown, Flame, Trophy, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar } from "@/components/profile/avatar";
 import { topLearners } from "@/lib/data";
-import { formatNumber, initials } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -49,9 +50,7 @@ export default async function LeaderboardPage() {
               >
                 {index === 0 ? <Crown className="size-4" /> : index + 1}
               </span>
-              <span className="grid size-9 place-items-center rounded-full bg-teal/15 text-xs font-extrabold text-teal">
-                {initials(learner.name)}
-              </span>
+              <Avatar avatarId={learner.avatar} name={learner.name} size="md" />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-bold">
                   {learner.name} {learner.plan === "pro" && <span className="text-gold">👑</span>}

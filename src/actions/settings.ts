@@ -2,14 +2,18 @@
 
 import { revalidatePath } from "next/cache";
 import { requireViewer } from "@/lib/auth";
+import { isAvatarId } from "@/lib/avatars";
 import { getPlayer, updatePlayer } from "@/lib/data";
 import { getLanguage } from "@/services/languages";
+import { isDailyGoal, isLearningReason } from "@/lib/onboarding";
 
 /** Persist identity and learning-language preferences. */
 export async function updateSettings(input: {
   name: string;
   sourceLanguage: string;
   targetLanguage: string;
+  dailyGoalMinutes: number;
+  learningReason: string;
 }): Promise<{ ok: boolean; message: string }> {
   const viewer = await requireViewer();
   const name = input.name.trim().slice(0, 60);
@@ -22,11 +26,19 @@ export async function updateSettings(input: {
   if (source.code === target.code) {
     return { ok: false, message: "Source and target languages must differ." };
   }
+  if (!isDailyGoal(input.dailyGoalMinutes)) {
+    return { ok: false, message: "Choose a valid daily goal." };
+  }
+  if (!isLearningReason(input.learningReason)) {
+    return { ok: false, message: "Choose why you are learning." };
+  }
 
   await updatePlayer(viewer.id, {
     name,
     sourceLanguage: source.code,
     targetLanguage: target.code,
+    dailyGoalMinutes: input.dailyGoalMinutes,
+    learningReason: input.learningReason,
   });
 
   revalidatePath("/settings");
@@ -42,6 +54,18 @@ export async function updateProfile(input: { name: string }): Promise<{ ok: bool
   await updatePlayer(viewer.id, { name });
   revalidatePath("/profile");
   return { ok: true, message: "Profile updated." };
+}
+
+/** Change the learner's chosen avatar from their profile or settings. */
+export async function updateAvatar(avatar: string): Promise<{ ok: boolean; message: string }> {
+  const viewer = await requireViewer();
+  if (!isAvatarId(avatar)) return { ok: false, message: "Choose a valid avatar." };
+
+  await updatePlayer(viewer.id, { avatar });
+  revalidatePath("/profile");
+  revalidatePath("/settings");
+  revalidatePath("/learn");
+  return { ok: true, message: "Avatar updated." };
 }
 
 export async function getPlayerSettings() {

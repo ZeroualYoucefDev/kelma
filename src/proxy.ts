@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 /**
- * Next.js 16 renamed Middleware to Proxy. This is the single network
- * boundary for optimistic auth checks; full verification is enforced again
- * inside the protected layout where Clerk user data is available.
+ * Next.js 16 renamed Middleware to Proxy. This is the optimistic network
+ * boundary; every protected page and Server Action still verifies the session
+ * and onboarding state on the server.
  */
 
 const clerkConfigured = Boolean(
@@ -12,6 +12,7 @@ const clerkConfigured = Boolean(
 );
 
 const isProtected = createRouteMatcher([
+  "/onboarding(.*)",
   "/learn(.*)",
   "/units(.*)",
   "/lesson(.*)",
@@ -28,17 +29,18 @@ const withClerk = clerkMiddleware(async (auth, request) => {
   const { userId } = await auth();
   if (userId) return;
 
-  const signIn = new URL("/sign-in", request.url);
-  signIn.searchParams.set("redirect_url", request.nextUrl.pathname);
-  return NextResponse.redirect(signIn);
+  // Unauthenticated visitors only ever land on the public marketing page.
+  return NextResponse.redirect(new URL("/", request.url));
 });
 
-/** When no Clerk keys exist (local UI preview) requests pass through. */
-export default clerkConfigured
+const proxy = clerkConfigured
   ? withClerk
   : function proxy() {
       return NextResponse.next();
     };
+
+export default proxy;
+export { proxy };
 
 export const config = {
   matcher: ["/((?!_next|api/webhooks|favicon.ico|.*\\..*).*)"],

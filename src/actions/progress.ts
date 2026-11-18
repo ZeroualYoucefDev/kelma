@@ -1,20 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireViewer } from "@/lib/auth";
+import { requireOnboardedViewer } from "@/lib/auth";
 import {
   getPlayer,
   getProgressFor,
   recordAttempt,
   saveProgress,
 } from "@/lib/data";
-import {
-  advanceStreak,
-  dayKey,
-  heartsAfterLesson,
-  lessonRewards,
-  refillHearts,
-} from "@/lib/gamification";
+import { advanceStreak, dayKey, lessonRewards, refillHearts } from "@/lib/gamification";
 
 export type LessonResult = {
   xp: number;
@@ -30,7 +24,7 @@ export async function completeLesson(input: {
   correct: number;
   total: number;
 }): Promise<LessonResult> {
-  const viewer = await requireViewer();
+  const viewer = await requireOnboardedViewer();
   const player = await getPlayer(viewer);
   const current = await getProgressFor(viewer.id);
   const isPro = player.plan === "pro";
@@ -43,15 +37,16 @@ export async function completeLesson(input: {
     current.streakFreezes,
   );
   const wrong = Math.max(0, input.total - input.correct);
-  const hearts = heartsAfterLesson(refilled.hearts, wrong, isPro);
   const perfect = wrong === 0;
 
+  // Wrong answers are charged one-by-one by registerWrongAnswer(). Completion
+  // only commits rewards and keeps the latest heart state.
   await saveProgress(viewer.id, {
     ...current,
     xp: current.xp + rewards.xp,
     gems: current.gems + rewards.gems,
-    hearts,
-    heartsUpdatedAt: hearts < refilled.hearts ? new Date() : refilled.heartsUpdatedAt,
+    hearts: refilled.hearts,
+    heartsUpdatedAt: refilled.heartsUpdatedAt,
     streak: streak.streak,
     longestStreak: Math.max(current.longestStreak, streak.streak),
     lastActiveDate: dayKey(),
@@ -72,5 +67,5 @@ export async function completeLesson(input: {
   revalidatePath("/shop");
   revalidatePath("/profile");
 
-  return { ...rewards, hearts, streak: streak.streak, perfect };
+  return { ...rewards, hearts: refilled.hearts, streak: streak.streak, perfect };
 }

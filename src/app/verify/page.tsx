@@ -1,39 +1,24 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { MailCheck } from "lucide-react";
-import { AuthShell, SetupNotice } from "@/components/auth/auth-shell";
-import { Button } from "@/components/ui/button";
+import { AuthShell } from "@/components/auth/auth-shell";
+import { EmailLinkVerification } from "@/components/auth/email-link-verification";
 import { clerkConfigured, getViewer } from "@/lib/auth";
+import { getPlayer } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
-/**
- * Confirmation handler. A verified session never sees the landing page —
- * it is sent straight into the dashboard. In local preview there is nothing
- * to verify, so we continue into the app too.
- */
+/** Landing page for Clerk magic-link verification. */
 export default async function VerifyPage() {
+  if (!clerkConfigured) redirect("/");
+
   const viewer = await getViewer();
-  if (!viewer || viewer.verified) redirect("/learn");
+  if (viewer?.verified) {
+    const player = await getPlayer(viewer);
+    redirect(player.onboardingCompleted ? "/learn" : "/onboarding");
+  }
 
   return (
-    <AuthShell title="One last step" subtitle="Confirm your email to unlock your dashboard.">
-      {clerkConfigured ? (
-        <div className="space-y-5">
-          <div className="flex items-start gap-3 rounded-2xl border border-accent/25 bg-accent/8 p-4">
-            <MailCheck className="mt-0.5 size-5 shrink-0 text-accent" />
-            <p className="text-sm leading-relaxed text-slate-200">
-              Open the confirmation link we sent you. Once verified you will land directly on{" "}
-              <strong className="text-accent">/learn</strong> — no detour through the homepage.
-            </p>
-          </div>
-          <Button asChild variant="secondary" className="w-full">
-            <Link href="/sign-in">Back to sign in</Link>
-          </Button>
-        </div>
-      ) : (
-        <SetupNotice />
-      )}
+    <AuthShell title="Confirm your email" subtitle="One secure link, then your language setup.">
+      <EmailLinkVerification />
     </AuthShell>
   );
 }

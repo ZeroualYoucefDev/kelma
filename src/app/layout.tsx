@@ -22,14 +22,14 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#141018",
+  themeColor: "#0b0b1f",
   width: "device-width",
   initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const tree = (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <body className="min-h-screen bg-ink text-slate-100">
         {children}
         <Toaster
@@ -45,6 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 
-  // ClerkProvider requires live keys; local UI preview runs without them.
+  // ClerkProvider is mounted only when real keys are configured; public pages
+  // still render without it so environment setup never blocks the landing page.
   return clerkConfigured ? <ClerkProvider>{tree}</ClerkProvider> : tree;
 }
