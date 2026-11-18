@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Check, Flame, Gem, Target, Zap } from "lucide-react";
+import { Glyph, type GlyphName } from "@/components/brand/glyphs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -13,7 +13,15 @@ export default async function QuestsPage() {
   if (!viewer) return null;
   const progress = await getProgressFor(viewer.id);
 
-  const quests = [
+  const quests: Array<{
+    id: string;
+    title: string;
+    body: string;
+    current: number;
+    goal: number;
+    reward: number;
+    glyph: GlyphName;
+  }> = [
     {
       id: "first-lesson",
       title: "First steps",
@@ -21,7 +29,7 @@ export default async function QuestsPage() {
       current: Math.min(1, progress.lessonsCompleted),
       goal: 1,
       reward: 25,
-      icon: Target,
+      glyph: "target",
     },
     {
       id: "xp-hundred",
@@ -30,7 +38,7 @@ export default async function QuestsPage() {
       current: Math.min(100, progress.xp),
       goal: 100,
       reward: 50,
-      icon: Zap,
+      glyph: "bolt",
     },
     {
       id: "streak-three",
@@ -39,7 +47,7 @@ export default async function QuestsPage() {
       current: Math.min(3, progress.streak),
       goal: 3,
       reward: 75,
-      icon: Flame,
+      glyph: "flame",
     },
     {
       id: "three-lessons",
@@ -48,7 +56,7 @@ export default async function QuestsPage() {
       current: Math.min(3, progress.lessonsCompleted),
       goal: 3,
       reward: 100,
-      icon: Gem,
+      glyph: "gem",
     },
   ];
 
@@ -71,15 +79,15 @@ export default async function QuestsPage() {
             >
               <div className="flex items-start justify-between">
                 <span className="grid size-10 place-items-center rounded-xl bg-teal/15 text-teal">
-                  <quest.icon className="size-5" />
+                  <Glyph name={quest.glyph} className="size-5" />
                 </span>
                 {done ? (
                   <Badge variant="accent">
-                    <Check className="size-3" /> Complete
+                    <Glyph name="check" className="size-3" /> Complete
                   </Badge>
                 ) : (
                   <Badge variant="gold">
-                    <Gem className="size-3" /> {quest.reward}
+                    <Glyph name="gem" className="size-3" /> {quest.reward}
                   </Badge>
                 )}
               </div>

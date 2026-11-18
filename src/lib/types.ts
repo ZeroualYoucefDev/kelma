@@ -10,6 +10,8 @@ export type Exercise = {
   options: string[];
   answerIndex: number;
   speak?: { text: string; locale: string };
+  /** Same word/meaning pronounced in the learner's native language. */
+  nativeSpeak?: { text: string; locale: string };
   note?: string;
 };
 

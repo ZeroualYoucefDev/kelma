@@ -32,7 +32,7 @@ export default async function ProtectedLayout({ children }: { children: React.Re
         gems: progress.gems,
         hearts: hearts.hearts,
         streak: progress.streak,
-        targetLanguage: { emoji: target.emoji, name: target.name },
+        targetLanguage: { code: target.code, name: target.name },
         isPreview: viewer.isPreview,
       }}
     >

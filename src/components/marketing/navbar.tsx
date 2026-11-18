@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Menu, X } from "lucide-react";
+import { Glyph } from "@/components/brand/glyphs";
 import { KelmaWordmark } from "@/components/brand/kelma-mark";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -41,7 +41,7 @@ export function Navbar() {
           </Button>
           <Button asChild size="sm">
             <Link href="/sign-up">
-              Get started <ArrowRight className="size-3.5" />
+              Get started <Glyph name="arrow" className="size-3.5" />
             </Link>
           </Button>
         </div>
@@ -52,7 +52,7 @@ export function Navbar() {
           aria-label="Toggle navigation"
           aria-expanded={open}
         >
-          {open ? <X className="size-5" /> : <Menu className="size-5" />}
+          <Glyph name={open ? "close" : "menu"} className="size-5" />
         </button>
       </div>
 

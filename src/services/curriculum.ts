@@ -152,7 +152,8 @@ export async function buildLesson(
       question: `What does “${pair.native}” mean in ${curriculum.target.name}?`,
       ...makeOptions(pair.target, targetWords, `${seed}:translate`),
       speak: { text: pair.native, locale: curriculum.source.locale },
-      note: `${curriculum.source.emoji} ${curriculum.source.name} → ${curriculum.target.emoji} ${curriculum.target.name}`,
+      nativeSpeak: { text: pair.native, locale: curriculum.source.locale },
+      note: `${curriculum.source.name} → ${curriculum.target.name}`,
     });
 
     exercises.push({
@@ -162,16 +163,18 @@ export async function buildLesson(
       question: `What does “${pair.target}” mean in ${curriculum.source.name}?`,
       ...makeOptions(pair.native, nativeWords, `${seed}:reverse`),
       speak: { text: pair.target, locale: curriculum.target.locale },
-      note: `${curriculum.target.emoji} ${curriculum.target.name} → ${curriculum.source.emoji} ${curriculum.source.name}`,
+      nativeSpeak: { text: pair.native, locale: curriculum.source.locale },
+      note: `${curriculum.target.name} → ${curriculum.source.name}`,
     });
 
     exercises.push({
       id: `${seed}:listen`,
       kind: "listen",
-      prompt: "🔊",
+      prompt: "Listen",
       question: `Listen and choose the ${curriculum.source.name} meaning`,
       ...makeOptions(pair.native, nativeWords, `${seed}:listen`),
       speak: { text: pair.target, locale: curriculum.target.locale },
+      nativeSpeak: { text: pair.native, locale: curriculum.source.locale },
       note: `Spoken in ${curriculum.target.name} · ${curriculum.target.locale}`,
     });
   });
@@ -188,6 +191,7 @@ export async function buildLesson(
         question: "Which word matches this definition?",
         ...makeOptions(definitionEntry.word, nativeWords, `${lessonId}:meaning`),
         speak: { text: definitionEntry.word, locale: curriculum.source.locale },
+        nativeSpeak: { text: definitionEntry.word, locale: curriculum.source.locale },
         note: definitionEntry.partOfSpeech ? `A ${definitionEntry.partOfSpeech}` : undefined,
       });
     }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, Volume2 } from "lucide-react";
+import { Glyph } from "@/components/brand/glyphs";
 import { speak } from "@/services/audio";
 import { cn } from "@/lib/utils";
 
@@ -71,7 +71,7 @@ export function HeroDemo({
             className="rounded-lg border border-line p-2 text-slate-400 transition-colors hover:border-accent hover:text-accent"
             aria-label="Pronounce source word"
           >
-            <Volume2 className="size-4" />
+            <Glyph name="sound" className="size-4" />
           </button>
         </div>
 
@@ -89,7 +89,7 @@ export function HeroDemo({
                 )}
               >
                 {option}
-                {revealed && correct && <Check className="size-4" />}
+                {revealed && correct && <Glyph name="check" className="size-4" />}
               </div>
             );
           })}

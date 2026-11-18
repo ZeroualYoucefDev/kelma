@@ -3,20 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createContext, useContext, useMemo, useState } from "react";
-import {
-  Flame,
-  Gem,
-  GraduationCap,
-  Heart,
-  Map,
-  Settings,
-  ShoppingBag,
-  Target,
-  Trophy,
-  UserRound,
-  Zap,
-} from "lucide-react";
+import { Glyph, type GlyphName } from "@/components/brand/glyphs";
 import { KelmaWordmark } from "@/components/brand/kelma-mark";
+import { LanguageSigil } from "@/components/brand/language-sigil";
 import { Avatar } from "@/components/profile/avatar";
 import { cn } from "@/lib/utils";
 
@@ -28,7 +17,7 @@ export type ShellStats = {
   gems: number;
   hearts: number;
   streak: number;
-  targetLanguage: { emoji: string; name: string };
+  targetLanguage: { code: string; name: string };
   isPreview: boolean;
 };
 
@@ -46,33 +35,35 @@ export function useHearts(): HeartsContextValue {
   return value;
 }
 
-const mainNav = [
-  { href: "/learn", label: "Learn", icon: GraduationCap },
-  { href: "/units", label: "Units", icon: Map },
-  { href: "/quests", label: "Quests", icon: Target },
-  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { href: "/shop", label: "Shop", icon: ShoppingBag },
+type NavItem = { href: string; label: string; glyph: GlyphName };
+
+const mainNav: NavItem[] = [
+  { href: "/learn", label: "Learn", glyph: "book" },
+  { href: "/units", label: "Units", glyph: "map" },
+  { href: "/quests", label: "Quests", glyph: "target" },
+  { href: "/leaderboard", label: "Leaderboard", glyph: "trophy" },
+  { href: "/shop", label: "Shop", glyph: "bag" },
 ];
 
-const accountNav = [
-  { href: "/profile", label: "Profile", icon: UserRound },
-  { href: "/settings", label: "Settings", icon: Settings },
+const accountNav: NavItem[] = [
+  { href: "/profile", label: "Profile", glyph: "user" },
+  { href: "/settings", label: "Settings", glyph: "settings" },
 ];
 
 function StatPill({
-  icon: Icon,
+  glyph,
   value,
   tone,
   label,
 }: {
-  icon: typeof Heart;
+  glyph: GlyphName;
   value: string | number;
   tone: string;
   label: string;
 }) {
   return (
     <div className="pill gap-1.5" title={label}>
-      <Icon className={cn("size-3.5", tone)} />
+      <Glyph name={glyph} className={cn("size-3.5", tone)} />
       <span className="tabular-nums text-white">{value}</span>
       <span className="hidden text-[10px] font-bold uppercase tracking-wider text-muted xl:inline">
         {label}
@@ -122,7 +113,7 @@ export function AppShell({ stats, children }: { stats: ShellStats; children: Rea
                       active ? "bg-accent/15" : "bg-white/5 group-hover:bg-white/10",
                     )}
                   >
-                    <item.icon className="size-4" />
+                    <Glyph name={item.glyph} className="size-4" />
                   </span>
                   {item.label}
                 </Link>
@@ -145,7 +136,7 @@ export function AppShell({ stats, children }: { stats: ShellStats; children: Rea
                     active ? "bg-violet/15 text-white" : "text-muted hover:bg-white/5 hover:text-white",
                   )}
                 >
-                  <item.icon className="size-4" />
+                  <Glyph name={item.glyph} className="size-4" />
                   {item.label}
                 </Link>
               );
@@ -158,8 +149,9 @@ export function AppShell({ stats, children }: { stats: ShellStats; children: Rea
                 <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
                   {isPro ? "Pro learner" : "Free learner"}
                 </p>
-                <p className="mt-0.5 truncate text-[10px] text-slate-400">
-                  {stats.targetLanguage.emoji} {stats.targetLanguage.name}
+                <p className="mt-0.5 flex items-center gap-1.5 truncate text-[10px] text-slate-400">
+                  <LanguageSigil code={stats.targetLanguage.code} className="size-4 rounded-[5px]" />
+                  {stats.targetLanguage.name}
                 </p>
               </div>
             </div>
@@ -175,29 +167,29 @@ export function AppShell({ stats, children }: { stats: ShellStats; children: Rea
 
               <div className="hidden items-center gap-2 sm:flex">
                 <StatPill
-                  icon={Heart}
+                  glyph="heart"
                   value={isPro ? "∞" : hearts}
                   tone="text-coral"
                   label="Hearts"
                 />
-                <StatPill icon={Gem} value={stats.gems} tone="text-teal" label="Gems" />
+                <StatPill glyph="gem" value={stats.gems} tone="text-teal" label="Gems" />
                 <StatPill
-                  icon={Flame}
+                  glyph="flame"
                   value={stats.streak}
                   tone="text-gold"
                   label="Streak"
                 />
-                <StatPill icon={Zap} value={stats.xp} tone="text-accent" label="XP" />
+                <StatPill glyph="bolt" value={stats.xp} tone="text-accent" label="XP" />
               </div>
 
               <div className="flex items-center gap-2 sm:hidden">
                 <StatPill
-                  icon={Heart}
+                  glyph="heart"
                   value={isPro ? "∞" : hearts}
                   tone="text-coral"
                   label="Hearts"
                 />
-                <StatPill icon={Gem} value={stats.gems} tone="text-teal" label="Gems" />
+                <StatPill glyph="gem" value={stats.gems} tone="text-teal" label="Gems" />
               </div>
 
               <div className="ml-auto flex items-center gap-2">
@@ -241,7 +233,7 @@ export function AppShell({ stats, children }: { stats: ShellStats; children: Rea
                 active ? "text-accent" : "text-muted",
               )}
             >
-              <item.icon className="size-5" />
+              <Glyph name={item.glyph} className="size-5" />
               {item.label}
             </Link>
           );

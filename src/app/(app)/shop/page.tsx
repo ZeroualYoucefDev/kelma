@@ -1,4 +1,4 @@
-import { Check, Gem, Heart, Snowflake } from "lucide-react";
+import { Glyph } from "@/components/brand/glyphs";
 import { CheckoutButtons, PurchaseButton } from "@/components/shop/shop-actions";
 import { Badge } from "@/components/ui/badge";
 import { getViewer } from "@/lib/auth";
@@ -23,7 +23,7 @@ export default async function ShopPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-teal">
-            <Gem className="size-3.5" /> Shop
+            <Glyph name="gem" className="size-3.5" /> Shop
           </p>
           <h1 className="mt-2 font-display text-4xl font-extrabold">Spend your hard-earned gems.</h1>
           <p className="mt-3 text-sm text-slate-400">
@@ -32,27 +32,29 @@ export default async function ShopPage() {
           </p>
         </div>
         <div className="rounded-xl border border-teal/30 bg-teal/10 px-4 py-3 text-sm font-extrabold text-teal">
-          💎 {progress.gems} gems
+          <span className="flex items-center gap-2">
+            <Glyph name="gem" className="size-4" /> {progress.gems} gems
+          </span>
         </div>
       </div>
 
       <div className="mt-9 grid gap-4 sm:grid-cols-2">
         {consumables.map((item) => {
-          const Icon = item.kind === "hearts" ? Heart : Snowflake;
+          const glyph = item.kind === "hearts" ? "heart" : "freeze";
           const disabled =
             progress.gems < item.price || (item.kind === "hearts" && progress.hearts >= MAX_HEARTS);
           return (
             <div key={item.id} className="rounded-2xl border border-line bg-surface/60 p-6">
               <div className="flex items-start justify-between">
                 <span className="grid size-11 place-items-center rounded-xl bg-accent/10 text-2xl">
-                  {item.icon}
+                  <Glyph name={glyph} className="size-6" />
                 </span>
                 <Badge variant="teal">
-                  <Gem className="size-3" /> {item.price}
+                  <Glyph name="gem" className="size-3" /> {item.price}
                 </Badge>
               </div>
               <h2 className="mt-5 flex items-center gap-2 font-display text-lg font-extrabold">
-                {item.name} <Icon className="size-4 text-accent" />
+                {item.name} <Glyph name={glyph} className="size-4 text-accent" />
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-slate-400">{item.description}</p>
               <div className="mt-6">
@@ -67,7 +69,9 @@ export default async function ShopPage() {
         <div className="pointer-events-none absolute inset-0 grid-glow opacity-50" />
         <div className="relative grid gap-8 md:grid-cols-2 md:items-center">
           <div>
-            <Badge variant="gold" className="mb-4">👑 Kelma Pro</Badge>
+            <Badge variant="gold" className="mb-4">
+              <Glyph name="crown" className="size-3.5" /> Kelma Pro
+            </Badge>
             <h2 className="font-display text-3xl font-extrabold">Never lose a heart again.</h2>
             <p className="mt-3 max-w-lg text-sm leading-relaxed text-slate-300">
               Unlimited hearts, 1.5× XP on every lesson and every advanced drill. Pay securely in DZD
@@ -77,7 +81,7 @@ export default async function ShopPage() {
               {["Unlimited hearts", "1.5× XP and gems", "Every advanced exercise type", "Priority support"].map(
                 (benefit) => (
                   <li key={benefit} className="flex items-center gap-2">
-                    <Check className="size-4 text-gold" /> {benefit}
+                    <Glyph name="check" className="size-4 text-gold" /> {benefit}
                   </li>
                 ),
               )}
@@ -86,7 +90,9 @@ export default async function ShopPage() {
           <div>
             {player.plan === "pro" ? (
               <div className="rounded-2xl border border-gold/40 bg-gold/10 p-6 text-center">
-                <p className="font-display text-xl font-extrabold text-gold">You are Pro 👑</p>
+                <p className="flex items-center justify-center gap-2 font-display text-xl font-extrabold text-gold">
+                  <Glyph name="crown" className="size-5" /> You are Pro
+                </p>
                 <p className="mt-2 text-xs text-slate-400">Unlimited hearts are active on every lesson.</p>
               </div>
             ) : (

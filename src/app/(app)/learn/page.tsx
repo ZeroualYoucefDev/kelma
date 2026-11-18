@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, Flame, Heart, Sparkles, Trophy } from "lucide-react";
+import { Glyph } from "@/components/brand/glyphs";
+import { LanguageSigil } from "@/components/brand/language-sigil";
 import { UnitPath } from "@/components/app/unit-path";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -61,10 +62,11 @@ export default async function LearnPage() {
             <div className="max-w-2xl">
               <div className="mb-4 flex flex-wrap items-center gap-2">
                 <span className="pill border-accent/30 bg-accent/10 text-accent">
-                  <Sparkles className="size-3.5" /> Your learning studio
+                  <Glyph name="spark" className="size-3.5" /> Your learning studio
                 </span>
                 <span className="pill text-muted">
-                  {curriculum.target.emoji} Learning {curriculum.target.name}
+                  <LanguageSigil code={curriculum.target.code} className="size-5" />
+                  Learning {curriculum.target.name}
                 </span>
               </div>
 
@@ -81,13 +83,13 @@ export default async function LearnPage() {
                 {nextLesson && !heartsZero ? (
                   <Button asChild size="lg">
                     <Link href={`/lesson/${nextLesson.id}`}>
-                      Continue learning <ArrowRight className="size-4" />
+                      Continue learning <Glyph name="arrow" className="size-4" />
                     </Link>
                   </Button>
                 ) : (
                   <Button asChild size="lg" variant={heartsZero ? "destructive" : "default"}>
                     <Link href="/shop">
-                      <Heart className="size-4" /> {heartsZero ? "Refill hearts" : "Browse the shop"}
+                      <Glyph name="heart" className="size-4" /> {heartsZero ? "Refill hearts" : "Browse the shop"}
                     </Link>
                   </Button>
                 )}
@@ -100,7 +102,7 @@ export default async function LearnPage() {
             <div className="w-full rounded-3xl border border-line bg-ink/40 p-5 sm:w-64">
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-2 text-sm font-extrabold">
-                  <Trophy className="size-4 text-gold" /> Level {level.level}
+                  <Glyph name="trophy" className="size-4 text-gold" /> Level {level.level}
                 </span>
                 <span className="text-xs font-bold text-muted">{progress.xp} XP</span>
               </div>
@@ -113,7 +115,7 @@ export default async function LearnPage() {
                 <div className="rounded-xl bg-white/5 p-2.5">
                   <p className="font-display text-lg font-extrabold text-gold">{progress.streak}</p>
                   <p className="mt-0.5 flex items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted">
-                    <Flame className="size-3" /> Day streak
+                    <Glyph name="flame" className="size-3" /> Day streak
                   </p>
                 </div>
                 <div className="rounded-xl bg-white/5 p-2.5">
@@ -121,7 +123,7 @@ export default async function LearnPage() {
                     {player.plan === "pro" ? "∞" : progress.hearts}
                   </p>
                   <p className="mt-0.5 flex items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted">
-                    <Heart className="size-3" /> Hearts
+                    <Glyph name="heart" className="size-3" /> Hearts
                   </p>
                 </div>
               </div>
@@ -132,11 +134,16 @@ export default async function LearnPage() {
         {heartsZero && (
           <div className="animate-pop mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-coral/30 bg-coral/[0.08] p-4">
             <p className="text-sm font-semibold text-coral">
-              Lessons are paused until you refill your hearts or go Pro.
+              Lessons are paused until you practice a unit, refill with gems, or go Pro.
             </p>
-            <Button asChild size="sm" variant="destructive">
-              <Link href="/shop">Refill now</Link>
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild size="sm">
+                <Link href={`/practice/${curriculum.units[0]?.id ?? "unit-1"}`}>Practice for a heart</Link>
+              </Button>
+              <Button asChild size="sm" variant="destructive">
+                <Link href="/shop">Refill now</Link>
+              </Button>
+            </div>
           </div>
         )}
       </section>

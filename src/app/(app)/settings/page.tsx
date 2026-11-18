@@ -1,4 +1,4 @@
-import { CreditCard, ShieldCheck, SlidersHorizontal } from "lucide-react";
+import { Glyph } from "@/components/brand/glyphs";
 import { Badge } from "@/components/ui/badge";
 import { CheckoutButtons } from "@/components/shop/shop-actions";
 import { SettingsForm } from "@/components/settings/settings-form";
@@ -21,7 +21,7 @@ export default async function SettingsPage() {
   return (
     <div>
       <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
-        <SlidersHorizontal className="size-3.5" /> Settings
+        <Glyph name="settings" className="size-3.5" /> Settings
       </p>
       <h1 className="mt-2 font-display text-4xl font-extrabold">Make Kelma yours.</h1>
 
@@ -32,7 +32,7 @@ export default async function SettingsPage() {
             Target-language names are resolved live from an ISO dataset.
           </p>
           <div className="mb-6 border-b border-line pb-6">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Avatar</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Sigil</h3>
             <div className="mt-3">
               <AvatarPicker current={player.avatar} name={player.name} />
             </div>
@@ -54,10 +54,12 @@ export default async function SettingsPage() {
           <div className="rounded-2xl border border-line bg-surface/60 p-6">
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-2 font-display text-lg font-bold">
-                <CreditCard className="size-4 text-gold" /> Billing
+                <Glyph name="card" className="size-4 text-gold" /> Billing
               </h2>
               {player.plan === "pro" ? (
-                <Badge variant="gold">👑 Pro active</Badge>
+                <Badge variant="gold">
+                  <Glyph name="crown" className="size-3.5" /> Pro active
+                </Badge>
               ) : (
                 <Badge variant="outline">Free plan</Badge>
               )}
@@ -81,7 +83,7 @@ export default async function SettingsPage() {
 
           <div className="rounded-2xl border border-line bg-surface/60 p-6">
             <h2 className="flex items-center gap-2 font-display text-lg font-bold">
-              <ShieldCheck className="size-4 text-accent" /> Verification
+              <Glyph name="shield" className="size-4 text-accent" /> Verification
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-slate-400">
               Only verified Google, email magic-link or phone-OTP sessions can reach the dashboard.

@@ -2,18 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  Clock3,
-  Globe2,
-  LoaderCircle,
-  Search,
-  Sparkles,
-} from "lucide-react";
 import { completeOnboarding } from "@/actions/onboarding";
+import { Glyph, type GlyphName } from "@/components/brand/glyphs";
 import { KelmaMark } from "@/components/brand/kelma-mark";
+import { LanguageSigil } from "@/components/brand/language-sigil";
 import { Button } from "@/components/ui/button";
 import { DAILY_GOALS } from "@/lib/onboarding";
 import type { Language } from "@/services/languages";
@@ -26,6 +18,8 @@ const STEPS = [
 ] as const;
 
 type StepIndex = 0 | 1 | 2;
+
+const GOAL_GLYPHS: GlyphName[] = ["sprout", "bolt", "flame", "rocket"];
 
 function LanguageCard({
   language,
@@ -50,14 +44,10 @@ function LanguageCard({
           : "border-line bg-surface/60 hover:border-violet/50 hover:bg-surface-2/70",
       )}
     >
-      <span
-        className={cn(
-          "grid size-11 shrink-0 place-items-center rounded-xl text-2xl transition-transform group-hover:scale-110",
-          active ? "bg-accent/15" : "bg-white/5",
-        )}
-      >
-        {language.emoji}
-      </span>
+      <LanguageSigil
+        code={language.code}
+        className="size-11 rounded-xl transition-transform group-hover:scale-110"
+      />
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-extrabold text-white">{language.name}</span>
         <span className="mt-0.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted">
@@ -71,7 +61,7 @@ function LanguageCard({
           active ? "border-accent bg-accent text-[#171438]" : "border-line text-transparent",
         )}
       >
-        <Check className="size-3.5" strokeWidth={3} />
+        <Glyph name="check" className="size-3.5" strokeWidth={3} />
       </span>
     </button>
   );
@@ -156,7 +146,7 @@ export function OnboardingFlow({
 
           <div className="flex items-center gap-3">
             <span className="pill border-accent/25 bg-accent/10 text-accent">
-              <Sparkles className="size-3.5" /> Three quick choices
+              <Glyph name="spark" className="size-3.5" /> Three quick choices
             </span>
             <span className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-muted">
               {step + 1} / {STEPS.length}
@@ -181,7 +171,7 @@ export function OnboardingFlow({
                   index > step && "border-line text-muted",
                 )}
               >
-                {index < step ? <Check className="size-3.5" strokeWidth={3} /> : index + 1}
+                {index < step ? <Glyph name="check" className="size-3.5" strokeWidth={3} /> : index + 1}
               </span>
               <span
                 className={cn(
@@ -215,14 +205,15 @@ export function OnboardingFlow({
 
             {nativeLanguage && step > 0 && (
               <span className="pill border-violet/30 bg-violet/10 text-white">
-                {nativeLanguage.emoji} {nativeLanguage.name}
+                <LanguageSigil code={nativeLanguage.code} className="size-5" />
+                {nativeLanguage.name}
               </span>
             )}
           </div>
 
           {step !== 2 && (
             <div className="relative mb-5">
-              <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted" />
+              <Glyph name="search" className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted" />
               <input
                 type="search"
                 value={query}
@@ -258,7 +249,7 @@ export function OnboardingFlow({
 
               {filtered.length === 0 && (
                 <div className="rounded-2xl border border-line bg-surface/60 p-8 text-center">
-                  <Globe2 className="mx-auto size-6 text-muted" />
+                  <Glyph name="map" className="mx-auto size-6 text-muted" />
                   <p className="mt-3 text-sm text-muted">No language matches “{query}”.</p>
                 </div>
               )}
@@ -297,7 +288,7 @@ export function OnboardingFlow({
                         active ? "bg-accent text-[#171438]" : "bg-white/5 text-teal",
                       )}
                     >
-                      {["🌱", "⚡", "🔥", "🚀"][index]}
+                      <Glyph name={GOAL_GLYPHS[index] ?? "spark"} className="size-6" />
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center gap-2 font-display text-lg font-extrabold text-white">
@@ -314,7 +305,7 @@ export function OnboardingFlow({
                         active ? "border-accent bg-accent text-[#171438]" : "border-line text-transparent",
                       )}
                     >
-                      <Check className="size-3.5" strokeWidth={3} />
+                      <Glyph name="check" className="size-3.5" strokeWidth={3} />
                     </span>
                   </button>
                 );
@@ -325,15 +316,17 @@ export function OnboardingFlow({
           {step === 2 && nativeLanguage && targetLanguage && goal !== null && (
             <div className="animate-pop mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-line bg-surface/50 p-5">
               <span className="pill border-teal/30 bg-teal/10 text-teal">Your path</span>
-              <span className="text-sm font-extrabold text-white">
-                {nativeLanguage.emoji} {nativeLanguage.name}
+              <span className="flex items-center gap-2 text-sm font-extrabold text-white">
+                <LanguageSigil code={nativeLanguage.code} className="size-5" />
+                {nativeLanguage.name}
               </span>
-              <ArrowRight className="size-4 text-muted" />
-              <span className="text-sm font-extrabold text-white">
-                {targetLanguage.emoji} {targetLanguage.name}
+              <Glyph name="arrow" className="size-4 text-muted" />
+              <span className="flex items-center gap-2 text-sm font-extrabold text-white">
+                <LanguageSigil code={targetLanguage.code} className="size-5" />
+                {targetLanguage.name}
               </span>
               <span className="ml-auto flex items-center gap-1.5 text-xs font-bold text-muted">
-                <Clock3 className="size-3.5 text-gold" /> {goal} min a day
+                <Glyph name="clock" className="size-3.5 text-gold" /> {goal} min a day
               </span>
             </div>
           )}
@@ -346,7 +339,7 @@ export function OnboardingFlow({
             onClick={() => goTo((step - 1) as StepIndex)}
             disabled={step === 0 || busy}
           >
-            <ArrowLeft className="size-4" /> Back
+            <Glyph name="arrow-left" className="size-4" /> Back
           </Button>
 
           <div className="flex flex-wrap items-center justify-end gap-4">
@@ -357,19 +350,19 @@ export function OnboardingFlow({
             )}
             {step < STEPS.length - 1 ? (
               <Button type="button" onClick={() => goTo((step + 1) as StepIndex)} disabled={!canContinue}>
-                Continue <ArrowRight className="size-4" />
+                Continue <Glyph name="arrow" className="size-4" />
               </Button>
             ) : (
               <Button type="button" onClick={finish} disabled={!canContinue || busy}>
-                {busy && <LoaderCircle className="size-4 animate-spin" />}
-                Open my studio <Sparkles className="size-4" />
+                {busy && <Glyph name="loader" className="size-4 animate-spin" />}
+                Open my studio <Glyph name="spark" className="size-4" />
               </Button>
             )}
           </div>
         </footer>
 
         <p className="mt-4 text-center text-[11px] text-muted">
-          Your avatar stays yours — pick it any time in Profile or Settings.
+          Your sigil stays yours — choose it any time in Profile or Settings.
         </p>
       </div>
     </div>

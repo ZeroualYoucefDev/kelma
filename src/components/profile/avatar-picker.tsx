@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 import { updateAvatar } from "@/actions/settings";
+import { Glyph } from "@/components/brand/glyphs";
 import { Avatar } from "@/components/profile/avatar";
 import { Button } from "@/components/ui/button";
 import { AVATARS } from "@/lib/avatars";
@@ -32,7 +32,7 @@ export function AvatarPicker({
       toast.success(result.message);
       router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not update avatar.");
+      toast.error(error instanceof Error ? error.message : "Could not update sigil.");
     } finally {
       setSaving(false);
     }
@@ -63,7 +63,7 @@ export function AvatarPicker({
               </span>
               {active && (
                 <span className="absolute right-1.5 top-1.5 grid size-4 place-items-center rounded-full bg-accent text-ink">
-                  <Check className="size-3" strokeWidth={3} />
+                  <Glyph name="check" className="size-3" strokeWidth={3} />
                 </span>
               )}
             </button>
@@ -82,8 +82,8 @@ export function AvatarPicker({
           </button>
         )}
         <Button type="button" onClick={save} disabled={saving || selected === current} size="sm">
-          {saving && <LoaderCircle className="size-4 animate-spin" />}
-          Save avatar
+          {saving && <Glyph name="loader" className="size-4 animate-spin" />}
+          Save sigil
         </Button>
       </div>
     </div>

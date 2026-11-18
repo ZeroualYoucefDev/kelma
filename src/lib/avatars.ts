@@ -1,16 +1,16 @@
 /**
- * Curated learner avatars. IDs are persisted in SQLite; labels and artwork are
+ * Custom sigils. IDs are persisted in SQLite; labels and artwork are
  * presentation-only so changing the artwork later never breaks saved profiles.
  */
 export const AVATARS = [
-  { id: "fox", label: "Fox", emoji: "🦊", gradient: "from-[#f2a65a] to-[#c96f35]" },
-  { id: "owl", label: "Owl", emoji: "🦉", gradient: "from-[#b9a7f3] to-[#6f5bc4]" },
-  { id: "panda", label: "Panda", emoji: "🐼", gradient: "from-[#d7dee8] to-[#8e9bab]" },
-  { id: "tiger", label: "Tiger", emoji: "🐯", gradient: "from-[#f7c86a] to-[#d98b3d]" },
-  { id: "frog", label: "Frog", emoji: "🐸", gradient: "from-[#8fd6a4] to-[#3f9b76]" },
-  { id: "koala", label: "Koala", emoji: "🐨", gradient: "from-[#a9c3d6] to-[#5d7f9b]" },
-  { id: "raccoon", label: "Raccoon", emoji: "🦝", gradient: "from-[#c5b4a6] to-[#77645a]" },
-  { id: "penguin", label: "Penguin", emoji: "🐧", gradient: "from-[#7fd3cf] to-[#3a8f96]" },
+  { id: "fox", label: "Ember", gradient: "from-[#FF8A5B] to-[#C2435F]" },
+  { id: "owl", label: "Halo", gradient: "from-[#A89BFF] to-[#5B49B8]" },
+  { id: "panda", label: "Echo", gradient: "from-[#DDE6F2] to-[#7890B2]" },
+  { id: "tiger", label: "Solstice", gradient: "from-[#FFD166] to-[#E07A3F]" },
+  { id: "frog", label: "Verdant", gradient: "from-[#9BE7A4] to-[#2F9C74]" },
+  { id: "koala", label: "Tide", gradient: "from-[#8ED8E8] to-[#397AA6]" },
+  { id: "raccoon", label: "Dusk", gradient: "from-[#C9B6FF] to-[#6B5AA6]" },
+  { id: "penguin", label: "Nacre", gradient: "from-[#B8F1E8] to-[#3E8E8C]" },
 ] as const;
 
 export type AvatarId = (typeof AVATARS)[number]["id"];

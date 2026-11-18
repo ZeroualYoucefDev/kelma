@@ -53,13 +53,13 @@ export async function updateProfile(input: { name: string }): Promise<{ ok: bool
 /** Change the learner's chosen avatar from their profile or settings. */
 export async function updateAvatar(avatar: string): Promise<{ ok: boolean; message: string }> {
   const viewer = await requireViewer();
-  if (!isAvatarId(avatar)) return { ok: false, message: "Choose a valid avatar." };
+  if (!isAvatarId(avatar)) return { ok: false, message: "Choose a valid sigil." };
 
   await updatePlayer(viewer.id, { avatar });
   revalidatePath("/profile");
   revalidatePath("/settings");
   revalidatePath("/learn");
-  return { ok: true, message: "Avatar updated." };
+  return { ok: true, message: "Sigil updated." };
 }
 
 export async function getPlayerSettings() {

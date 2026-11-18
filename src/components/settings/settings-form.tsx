@@ -65,7 +65,7 @@ export function SettingsForm({
           <select id="source" className={selectClass} value={source} onChange={(event) => setSource(event.target.value)}>
             {languages.map((language) => (
               <option key={language.code} value={language.code}>
-                {language.emoji} {language.name}
+                {language.name} · {language.code}
               </option>
             ))}
           </select>
@@ -75,7 +75,7 @@ export function SettingsForm({
           <select id="target" className={selectClass} value={target} onChange={(event) => setTarget(event.target.value)}>
             {languages.map((language) => (
               <option key={language.code} value={language.code}>
-                {language.emoji} {language.name}
+                {language.name} · {language.code}
               </option>
             ))}
           </select>

@@ -27,7 +27,7 @@ export const shopItems: ShopItem[] = [
     description: "Restore all five hearts and keep your run alive.",
     price: 350,
     kind: "hearts",
-    icon: "❤️",
+    icon: "heart",
   },
   {
     id: "streak-freeze",
@@ -35,7 +35,7 @@ export const shopItems: ShopItem[] = [
     description: "Protect your streak for one missed day.",
     price: 200,
     kind: "freeze",
-    icon: "🧊",
+    icon: "freeze",
   },
   {
     id: "pro-subscription",
@@ -43,7 +43,7 @@ export const shopItems: ShopItem[] = [
     description: "Unlimited hearts, 1.5× XP and every advanced drill. Pay in DZD with CIB or Edahabia.",
     price: 0,
     kind: "pro",
-    icon: "👑",
+    icon: "crown",
   },
 ];
 

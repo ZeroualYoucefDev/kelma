@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { BookOpenCheck, Clock3, Flame, Gem, Settings2, Trophy, Zap } from "lucide-react";
+import { Glyph, type GlyphName } from "@/components/brand/glyphs";
+import { LanguageSigil } from "@/components/brand/language-sigil";
 import { Avatar } from "@/components/profile/avatar";
 import { AvatarPicker } from "@/components/profile/avatar-picker";
 import { Button } from "@/components/ui/button";
@@ -26,11 +27,11 @@ export default async function ProfilePage() {
   const level = levelFromXp(progress.xp);
   const goal = DAILY_GOALS.find((item) => item.minutes === player.dailyGoalMinutes);
 
-  const stats = [
-    { icon: Zap, label: "Total XP", value: progress.xp.toLocaleString(), tone: "text-accent" },
-    { icon: Flame, label: "Day streak", value: `${progress.streak} days`, tone: "text-gold" },
-    { icon: Gem, label: "Gems", value: progress.gems.toLocaleString(), tone: "text-teal" },
-    { icon: BookOpenCheck, label: "Lessons", value: progress.lessonsCompleted.toLocaleString(), tone: "text-sky-400" },
+  const stats: Array<{ glyph: GlyphName; label: string; value: string; tone: string }> = [
+    { glyph: "bolt", label: "Total XP", value: progress.xp.toLocaleString(), tone: "text-accent" },
+    { glyph: "flame", label: "Day streak", value: `${progress.streak} days`, tone: "text-gold" },
+    { glyph: "gem", label: "Gems", value: progress.gems.toLocaleString(), tone: "text-teal" },
+    { glyph: "book", label: "Lessons", value: progress.lessonsCompleted.toLocaleString(), tone: "text-sky-400" },
   ];
 
   return (
@@ -41,15 +42,21 @@ export default async function ProfilePage() {
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="font-display text-3xl font-extrabold">{player.name}</h1>
-              {player.plan === "pro" && <Badge variant="gold">👑 Pro</Badge>}
+              {player.plan === "pro" && (
+                <Badge variant="gold">
+                  <Glyph name="crown" className="size-3.5" /> Pro
+                </Badge>
+              )}
             </div>
             <p className="mt-1 text-sm text-slate-400">{player.email}</p>
-            <p className="mt-1 text-xs text-slate-500">Learning {target.emoji} {target.name}</p>
+            <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
+              <LanguageSigil code={target.code} className="size-4" /> Learning {target.name}
+            </p>
           </div>
         </div>
         <Button asChild variant="secondary">
           <Link href="/settings">
-            <Settings2 className="size-4" /> Edit profile
+            <Glyph name="settings" className="size-4" /> Edit profile
           </Link>
         </Button>
       </div>
@@ -57,7 +64,7 @@ export default async function ProfilePage() {
       <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
           <div key={stat.label} className="rounded-2xl border border-line bg-surface/60 p-5">
-            <stat.icon className={`size-5 ${stat.tone}`} />
+            <Glyph name={stat.glyph} className={`size-5 ${stat.tone}`} />
             <p className="mt-4 font-display text-2xl font-extrabold">{stat.value}</p>
             <p className="mt-1 text-xs font-semibold text-slate-500">{stat.label}</p>
           </div>
@@ -69,8 +76,8 @@ export default async function ProfilePage() {
           <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">
             Learning
           </p>
-          <p className="mt-3 font-display text-lg font-bold">
-            {target.emoji} {target.name}
+          <p className="mt-3 flex items-center gap-2 font-display text-lg font-bold">
+            <LanguageSigil code={target.code} className="size-6" /> {target.name}
           </p>
           <p className="mt-1 text-xs text-slate-400">
             Live words, locale-matched audio, and a rhythm you chose.
@@ -85,7 +92,7 @@ export default async function ProfilePage() {
             Daily goal
           </p>
           <p className="mt-3 flex items-center gap-2 font-display text-lg font-bold">
-            <Clock3 className="size-5 text-teal" />
+            <Glyph name="clock" className="size-5 text-teal" />
             {goal?.minutes ?? 10} minutes a day
           </p>
           <p className="mt-1 text-xs text-slate-400">
@@ -100,8 +107,8 @@ export default async function ProfilePage() {
       <div className="mt-6 rounded-2xl border border-line bg-surface/60 p-6">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
-            <h2 className="font-display text-lg font-bold">Your avatar</h2>
-            <p className="mt-1 text-xs text-slate-400">Pick a character that feels like you.</p>
+            <h2 className="font-display text-lg font-bold">Your sigil</h2>
+            <p className="mt-1 text-xs text-slate-400">Pick a mark that feels like you.</p>
           </div>
         </div>
         <div className="mt-5">
@@ -112,7 +119,7 @@ export default async function ProfilePage() {
       <div className="mt-6 rounded-2xl border border-line bg-surface/60 p-6">
         <div className="flex items-center justify-between">
           <span className="flex items-center gap-2 font-display font-bold">
-            <Trophy className="size-4 text-gold" /> Level {level.level}
+            <Glyph name="trophy" className="size-4 text-gold" /> Level {level.level}
           </span>
           <span className="text-xs text-slate-500">
             {level.intoLevel} / {level.needed} XP

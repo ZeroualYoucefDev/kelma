@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Check, ChevronRight, Heart, Volume2, X } from "lucide-react";
+import { Glyph } from "@/components/brand/glyphs";
+import { LanguageSigil } from "@/components/brand/language-sigil";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { completeLesson, type LessonResult } from "@/actions/progress";
@@ -48,6 +49,11 @@ export function LessonPlayer({
   const exercise = lesson.exercises[index];
   const total = lesson.exercises.length;
   const finished = index >= total;
+  const nativeAudio = exercise?.nativeSpeak;
+  const showNativeAudio = Boolean(
+    nativeAudio &&
+      (nativeAudio.text !== exercise?.speak?.text || nativeAudio.locale !== exercise?.speak?.locale),
+  );
 
   useEffect(() => {
     warmUpVoices();
@@ -60,6 +66,11 @@ export function LessonPlayer({
     if (!exercise?.speak) return;
     void playPronunciation(exercise.speak.text, exercise.speak.locale);
   }, [exercise]);
+
+  const playNativeAudio = useCallback(() => {
+    if (!nativeAudio) return;
+    void playPronunciation(nativeAudio.text, nativeAudio.locale);
+  }, [nativeAudio]);
 
   useEffect(() => {
     if (exercise?.speak) {
@@ -198,7 +209,7 @@ export function LessonPlayer({
           className="rounded-xl p-2 text-muted transition-colors hover:bg-white/5 hover:text-white"
           aria-label="Exit lesson"
         >
-          <X className="size-5" />
+          <Glyph name="close" className="size-5" />
         </button>
 
         <Progress value={(index / total) * 100} className="h-3 flex-1" />
@@ -213,7 +224,11 @@ export function LessonPlayer({
             shaking && "animate-shake",
           )}
         >
-          <Heart className={cn("size-4", shaking && "fill-coral")} />
+          <Glyph
+            name="heart"
+            className={cn("size-4", shaking && "text-coral")}
+            fill={shaking ? "currentColor" : "none"}
+          />
           {isPro ? "∞" : hearts}
         </span>
       </div>
@@ -226,11 +241,13 @@ export function LessonPlayer({
             </span>
             <div className="flex items-center gap-2">
               <span className="pill text-muted">
-                {lesson.source.emoji} {lesson.source.name}
+                <LanguageSigil code={lesson.source.code} className="size-4" />
+                {lesson.source.name}
               </span>
-              <span className="text-xs font-bold text-muted">→</span>
+              <Glyph name="arrow" className="size-4 text-muted" />
               <span className="pill border-violet/30 bg-violet/10 text-white">
-                {lesson.target.emoji} {lesson.target.name}
+                <LanguageSigil code={lesson.target.code} className="size-4" />
+                {lesson.target.name}
               </span>
             </div>
           </div>
@@ -240,28 +257,51 @@ export function LessonPlayer({
           </h1>
 
           {exercise.kind === "listen" ? (
-            <button
-              onClick={playAudio}
-              className="mx-auto my-8 flex size-28 items-center justify-center rounded-full border-2 border-accent/40 bg-accent/10 text-accent transition-transform hover:scale-105 active:scale-95"
-              aria-label={`Play audio in ${lesson.target.name}`}
-            >
-              <Volume2 className="size-11" />
-            </button>
+            <div className="my-8 text-center">
+              <button
+                onClick={playAudio}
+                className="mx-auto flex size-28 items-center justify-center rounded-full border-2 border-accent/40 bg-accent/10 text-accent transition-transform hover:scale-105 active:scale-95"
+                aria-label={`Play audio in ${lesson.target.name}`}
+              >
+                <Glyph name="sound" className="size-11" />
+              </button>
+              <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-muted">
+                Spoken in {lesson.target.name}
+              </p>
+              {showNativeAudio && nativeAudio && (
+                <button
+                  onClick={playNativeAudio}
+                  className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-teal/30 bg-teal/10 px-3 py-1.5 text-xs font-bold text-teal transition-colors hover:bg-teal/20"
+                >
+                  <Glyph name="sound" className="size-3.5" /> Hear meaning in {lesson.source.name} ·{" "}
+                  {nativeAudio.locale}
+                </button>
+              )}
+            </div>
           ) : (
             <div className="my-8 rounded-3xl border border-line bg-ink/40 p-6 text-center">
               <p className="font-display text-3xl font-extrabold leading-snug break-words sm:text-4xl">
                 {exercise.prompt}
               </p>
-              {exercise.speak && (
-                <button
-                  onClick={() =>
-                    void playPronunciation(exercise.speak!.text, exercise.speak!.locale)
-                  }
-                  className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-muted transition-colors hover:text-accent"
-                >
-                  <Volume2 className="size-3.5" /> Hear it · {exercise.speak.locale}
-                </button>
-              )}
+              <div className="mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+                {exercise.speak && (
+                  <button
+                    onClick={playAudio}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-muted transition-colors hover:text-accent"
+                  >
+                    <Glyph name="sound" className="size-3.5" /> Hear it · {exercise.speak.locale}
+                  </button>
+                )}
+                {showNativeAudio && nativeAudio && (
+                  <button
+                    onClick={playNativeAudio}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-teal transition-colors hover:text-accent"
+                  >
+                    <Glyph name="sound" className="size-3.5" /> Hear in {lesson.source.name} ·{" "}
+                    {nativeAudio.locale}
+                  </button>
+                )}
+              </div>
             </div>
           )}
 
@@ -286,7 +326,7 @@ export function LessonPlayer({
                   )}
                 >
                   <span>{option}</span>
-                  {status !== "idle" && isAnswer && <Check className="size-4 shrink-0" />}
+                  {status !== "idle" && isAnswer && <Glyph name="check" className="size-4 shrink-0" />}
                 </button>
               );
             })}
@@ -312,8 +352,8 @@ export function LessonPlayer({
             aria-labelledby="heart-alert-title"
             className="animate-pop w-full max-w-sm rounded-[2rem] border border-coral/30 bg-surface p-7 text-center shadow-2xl"
           >
-            <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-coral/15 text-3xl">
-              {heartModal.locked ? "💔" : "❤️"}
+            <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-coral/15 text-coral">
+              <Glyph name={heartModal.locked ? "heart-break" : "heart"} className="size-8" />
             </div>
             <h2 id="heart-alert-title" className="mt-5 font-display text-2xl font-extrabold">
               {heartModal.locked ? "Hearts empty!" : "One heart gone"}
@@ -352,8 +392,8 @@ export function LessonPlayer({
       {outOfHearts && !heartModal && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-5 backdrop-blur-sm">
           <div className="animate-pop w-full max-w-md rounded-[2rem] border border-line bg-surface p-8 text-center shadow-2xl">
-            <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-coral/15 text-3xl">
-              💔
+            <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-coral/15 text-coral">
+              <Glyph name="heart-break" className="size-8" />
             </div>
             <h2 className="mt-5 font-display text-2xl font-extrabold">Out of hearts</h2>
             <p className="mt-2 text-sm text-muted">
@@ -378,8 +418,8 @@ export function LessonPlayer({
       {practiceResult && !outOfHearts && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-5 backdrop-blur-sm">
           <div className="animate-pop w-full max-w-md rounded-[2rem] border border-teal/30 bg-surface p-8 text-center shadow-2xl">
-            <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-teal/15 text-3xl">
-              {practiceResult.heartEarned ? "❤️" : "✨"}
+            <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-teal/15 text-teal">
+              <Glyph name={practiceResult.heartEarned ? "heart" : "spark"} className="size-8" />
             </div>
             <h2 className="mt-5 font-display text-2xl font-extrabold">
               {practiceResult.heartEarned ? "Heart earned!" : "Practice complete!"}
@@ -404,8 +444,8 @@ export function LessonPlayer({
       {result && !outOfHearts && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-5 backdrop-blur-sm">
           <div className="animate-pop w-full max-w-md rounded-[2rem] border border-line bg-surface p-8 text-center shadow-2xl">
-            <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-accent/15 text-3xl">
-              {result.perfect ? "🏆" : "🎉"}
+            <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-accent/15 text-accent">
+              <Glyph name={result.perfect ? "trophy" : "spark"} className="size-8" />
             </div>
             <h2 className="mt-5 font-display text-2xl font-extrabold">
               {result.perfect ? "Perfect lesson!" : "Lesson complete!"}
@@ -428,7 +468,7 @@ export function LessonPlayer({
               ))}
             </div>
             <Button className="mt-7 w-full" onClick={() => router.push("/learn")}>
-              {saving ? "Saving…" : "Continue"} <ChevronRight className="size-4" />
+              {saving ? "Saving…" : "Continue"} <Glyph name="chevron" className="size-4" />
             </Button>
           </div>
         </div>
