@@ -7,7 +7,7 @@ import { Check, ChevronRight, Heart, Volume2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { completeLesson, type LessonResult } from "@/actions/progress";
-import { registerWrongAnswer } from "@/actions/hearts";
+import { completePractice, registerWrongAnswer, type PracticeResult } from "@/actions/hearts";
 import { useHearts } from "@/components/app/app-shell";
 import { playPronunciation, warmUpVoices } from "@/services/audio";
 import type { Lesson } from "@/lib/types";
@@ -20,12 +20,19 @@ function newAnswerId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-export function LessonPlayer({ lesson }: { lesson: Lesson }) {
+export function LessonPlayer({
+  lesson,
+  practice,
+}: {
+  lesson: Lesson;
+  practice?: { unitId: string };
+}) {
   const router = useRouter();
   const { hearts, isPro, setHearts } = useHearts();
   const timer = useRef<number | null>(null);
   const finishedRef = useRef(false);
   const correctRef = useRef(0);
+  const practiceIdRef = useRef<string | null>(null);
 
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -33,6 +40,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
   const [shaking, setShaking] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
   const [result, setResult] = useState<LessonResult | null>(null);
+  const [practiceResult, setPracticeResult] = useState<PracticeResult | null>(null);
   const [heartModal, setHeartModal] = useState<{ locked: boolean; saving: boolean } | null>(null);
   const [outOfHearts, setOutOfHearts] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -65,21 +73,42 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
     finishedRef.current = true;
     setSaving(true);
     try {
-      const outcome = await completeLesson({
-        lessonKey: lesson.plan.id,
-        correct: value,
-        total,
-      });
-      setResult(outcome);
-      setHearts(outcome.hearts);
+      if (practice) {
+        if (!practiceIdRef.current) practiceIdRef.current = newAnswerId();
+        const outcome = await completePractice({
+          sessionId: practiceIdRef.current,
+          unitId: practice.unitId,
+          correct: value,
+          total,
+        });
+        setPracticeResult(outcome);
+        setHearts(outcome.hearts);
+      } else {
+        const outcome = await completeLesson({
+          lessonKey: lesson.plan.id,
+          correct: value,
+          total,
+        });
+        setResult(outcome);
+        setHearts(outcome.hearts);
+      }
     } catch {
-      setResult({
-        xp: 0,
-        gems: 0,
-        hearts,
-        streak: 0,
-        perfect: value === total,
-      });
+      if (practice) {
+        setPracticeResult({
+          hearts: isPro ? 5 : Math.min(hearts + 1, 5),
+          max: 5,
+          heartEarned: !isPro && hearts < 5,
+          isPro,
+        });
+      } else {
+        setResult({
+          xp: 0,
+          gems: 0,
+          hearts,
+          streak: 0,
+          perfect: value === total,
+        });
+      }
     } finally {
       setSaving(false);
     }
@@ -98,7 +127,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
   function choose(optionIndex: number) {
     if (status !== "idle" || !exercise || saving || heartModal) return;
 
-    if (!isPro && hearts <= 0) {
+    if (!practice && !isPro && hearts <= 0) {
       setOutOfHearts(true);
       return;
     }
@@ -116,6 +145,13 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
 
     setShaking(true);
     window.setTimeout(() => setShaking(false), 500);
+
+    // Practice is a safe space: mistakes teach, they never cost a heart.
+    if (practice) {
+      timer.current = window.setTimeout(() => advance(correctRef.current), 1100);
+      return;
+    }
+
     setHeartModal({ locked: false, saving: true });
 
     void (async () => {
@@ -136,14 +172,14 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
   function continueAfterMistake() {
     const modal = heartModal;
     setHeartModal(null);
-    if (modal?.locked || (!isPro && hearts <= 0)) {
+    if (!practice && (modal?.locked || (!isPro && hearts <= 0))) {
       setOutOfHearts(true);
       return;
     }
     advance(correctRef.current);
   }
 
-  if (!exercise && !result) {
+  if (!exercise && !result && !practiceResult) {
     return (
       <div className="mx-auto max-w-2xl rounded-3xl border border-line bg-surface p-8 text-center">
         <p className="text-muted">This lesson has no exercises available.</p>
@@ -166,6 +202,10 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
         </button>
 
         <Progress value={(index / total) * 100} className="h-3 flex-1" />
+
+        {practice && (
+          <span className="pill border-teal/30 bg-teal/10 text-teal">Practice · +1 heart</span>
+        )}
 
         <span
           className={cn(
@@ -257,6 +297,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
             {status === "wrong" && (
               <span className="animate-pop text-coral">
                 Not quite — the answer was “{exercise.options[exercise.answerIndex]}”.
+                {practice && " Practice is free — no hearts lost."}
               </span>
             )}
           </div>
@@ -279,17 +320,31 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-muted">
               {heartModal.locked
-                ? "Refill with gems or go Pro to keep learning right now."
+                ? "Practice a unit to earn a heart, spend gems, or go Pro to keep learning right now."
                 : `You have ${hearts} ${hearts === 1 ? "heart" : "hearts"} left. Watch out for the next one.`}
             </p>
-            <Button
-              className="mt-6 w-full"
-              variant={heartModal.locked ? "destructive" : "default"}
-              onClick={heartModal.locked ? () => router.push("/shop") : continueAfterMistake}
-              disabled={heartModal.saving}
-            >
-              {heartModal.saving ? "Saving…" : heartModal.locked ? "Refill hearts" : "Keep going"}
-            </Button>
+            {heartModal.locked ? (
+              <div className="mt-6 grid gap-2">
+                <Button
+                  variant="destructive"
+                  onClick={() => router.push(`/practice/${lesson.unit.id}`)}
+                  disabled={heartModal.saving}
+                >
+                  Practice for a heart
+                </Button>
+                <Button asChild variant="secondary" disabled={heartModal.saving}>
+                  <Link href="/shop">Use gems or go Pro</Link>
+                </Button>
+              </div>
+            ) : (
+              <Button
+                className="mt-6 w-full"
+                onClick={continueAfterMistake}
+                disabled={heartModal.saving}
+              >
+                {heartModal.saving ? "Saving…" : "Keep going"}
+              </Button>
+            )}
           </div>
         </div>
       )}
@@ -302,13 +357,45 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
             </div>
             <h2 className="mt-5 font-display text-2xl font-extrabold">Out of hearts</h2>
             <p className="mt-2 text-sm text-muted">
-              Lessons are locked until hearts refill, you spend gems, or you switch to Pro.
+              Lessons are locked until hearts refill, you practice a unit, you spend gems, or you
+              switch to Pro.
             </p>
             <div className="mt-7 grid gap-2 sm:grid-cols-2">
+              <Button onClick={() => router.push(`/practice/${lesson.unit.id}`)}>
+                Practice for a heart
+              </Button>
               <Button asChild variant="secondary">
                 <Link href="/shop">Visit shop</Link>
               </Button>
-              <Button onClick={() => router.push("/learn")}>Back to cards</Button>
+              <Button className="sm:col-span-2" variant="ghost" onClick={() => router.push("/learn")}>
+                Back to cards
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {practiceResult && !outOfHearts && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-5 backdrop-blur-sm">
+          <div className="animate-pop w-full max-w-md rounded-[2rem] border border-teal/30 bg-surface p-8 text-center shadow-2xl">
+            <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-teal/15 text-3xl">
+              {practiceResult.heartEarned ? "❤️" : "✨"}
+            </div>
+            <h2 className="mt-5 font-display text-2xl font-extrabold">
+              {practiceResult.heartEarned ? "Heart earned!" : "Practice complete!"}
+            </h2>
+            <p className="mt-2 text-sm text-muted">
+              {practiceResult.isPro
+                ? "Your Pro hearts are already unlimited."
+                : practiceResult.heartEarned
+                  ? `You now have ${practiceResult.hearts} ${practiceResult.hearts === 1 ? "heart" : "hearts"}. You can jump back into any lesson.`
+                  : "Your hearts are already full — nice work."}
+            </p>
+            <div className="mt-7 grid gap-2 sm:grid-cols-2">
+              <Button onClick={() => router.push("/learn")}>Back to lessons</Button>
+              <Button asChild variant="secondary">
+                <Link href={`/lesson/${lesson.plan.id}`}>Keep learning</Link>
+              </Button>
             </div>
           </div>
         </div>

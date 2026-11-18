@@ -1,6 +1,7 @@
-import { and, desc, eq, gt, sql } from "drizzle-orm";
-import { db } from "@/db";
-import { heartEvents, lessonAttempts, progress, purchases, users } from "@/db/schema";
+import { and, desc, eq } from "drizzle-orm";
+import { db, rawSqlite } from "@/db";
+import { heartEvents, lessonAttempts, progress, users } from "@/db/schema";
+import { MAX_HEARTS } from "./gamification";
 import type { Viewer } from "./types";
 import { displayName } from "./utils";
 
@@ -215,44 +216,137 @@ export async function reserveHeartEvent(input: {
   return { applied: true, heartsAfter: input.projectedHearts };
 }
 
-/** Atomically subtract one heart, never crossing zero. */
-export async function decrementHeart(userId: string): Promise<number> {
-  if (!db) {
-    const current = previewProgress.get(userId) ?? defaultProgress();
-    if (current.hearts <= 0) return 0;
-    const hearts = current.hearts - 1;
-    previewProgress.set(userId, { ...current, hearts, heartsUpdatedAt: new Date() });
-    return hearts;
+/**
+ * Apply a reserved answer exactly once. The ledger row, the atomic decrement
+ * and the authoritative heart count are committed in one SQLite transaction,
+ * so a crash between steps can never cause a lost or duplicated deduction.
+ */
+export async function settleHeartEvent(input: {
+  eventId: string;
+  userId: string;
+}): Promise<{ hearts: number; appliedNow: boolean }> {
+  if (!rawSqlite) {
+    const existing = previewHeartEvents.get(input.eventId);
+    if (existing !== undefined) return { hearts: existing, appliedNow: false };
+    const current = previewProgress.get(input.userId) ?? defaultProgress();
+    const hearts = Math.max(0, current.hearts - 1);
+    previewProgress.set(input.userId, {
+      ...current,
+      hearts,
+      heartsUpdatedAt: new Date(),
+    });
+    previewHeartEvents.set(input.eventId, hearts);
+    return { hearts, appliedNow: true };
   }
 
-  const [row] = await db
-    .update(progress)
-    .set({
-      hearts: sql<number>`CASE WHEN ${progress.hearts} > 0 THEN ${progress.hearts} - 1 ELSE 0 END`,
-      heartsUpdatedAt: new Date(),
-      updatedAt: new Date(),
-    })
-    .where(and(eq(progress.userId, userId), gt(progress.hearts, 0)))
-    .returning({ hearts: progress.hearts });
+  const now = Math.floor(Date.now() / 1000);
+  rawSqlite.exec("BEGIN IMMEDIATE");
+  try {
+    const event = rawSqlite
+      .prepare("SELECT user_id, applied, hearts_after FROM heart_events WHERE id = ?")
+      .get(input.eventId) as
+      | { user_id: string; applied: number; hearts_after: number }
+      | undefined;
 
-  if (row) return row.hearts;
-  const [fallback] = await db
-    .select({ hearts: progress.hearts })
-    .from(progress)
-    .where(eq(progress.userId, userId));
-  return fallback?.hearts ?? 0;
+    if (!event || event.user_id !== input.userId) {
+      throw new Error("Heart event not found for this learner.");
+    }
+    if (event.applied === 1) {
+      rawSqlite.exec("COMMIT");
+      return { hearts: event.hearts_after, appliedNow: false };
+    }
+
+    rawSqlite
+      .prepare(
+        `UPDATE progress
+         SET hearts = CASE WHEN hearts > 0 THEN hearts - 1 ELSE 0 END,
+             hearts_updated_at = ?, updated_at = ?
+         WHERE user_id = ?`,
+      )
+      .run(now, now, input.userId);
+
+    const current = rawSqlite
+      .prepare("SELECT hearts FROM progress WHERE user_id = ?")
+      .get(input.userId) as { hearts: number } | undefined;
+    const hearts = current?.hearts ?? 0;
+
+    rawSqlite
+      .prepare("UPDATE heart_events SET applied = 1, hearts_after = ? WHERE id = ?")
+      .run(hearts, input.eventId);
+
+    rawSqlite.exec("COMMIT");
+    return { hearts, appliedNow: true };
+  } catch (error) {
+    rawSqlite.exec("ROLLBACK");
+    throw error;
+  }
 }
 
-/** Store the authoritative heart count after an atomic decrement. */
-export async function finalizeHeartEvent(eventId: string, heartsAfter: number): Promise<void> {
-  if (!db) {
-    previewHeartEvents.set(eventId, heartsAfter);
-    return;
+/** Completed unit practice always gives a free learner one heart, capped at 5. */
+export async function awardPracticeHeart(input: {
+  sessionId: string;
+  userId: string;
+  unitId: string;
+}): Promise<{ hearts: number; heartsAwarded: number; alreadyApplied: boolean }> {
+  if (!rawSqlite) {
+    const current = previewProgress.get(input.userId) ?? defaultProgress();
+    const hearts = Math.min(MAX_HEARTS, current.hearts + 1);
+    previewProgress.set(input.userId, { ...current, hearts, heartsUpdatedAt: new Date() });
+    return { hearts, heartsAwarded: hearts - current.hearts, alreadyApplied: false };
   }
-  await db
-    .update(heartEvents)
-    .set({ heartsAfter })
-    .where(eq(heartEvents.id, eventId));
+
+  const now = Math.floor(Date.now() / 1000);
+  rawSqlite.exec("BEGIN IMMEDIATE");
+  try {
+    const existing = rawSqlite
+      .prepare("SELECT user_id, unit_id, hearts_awarded FROM practice_sessions WHERE id = ?")
+      .get(input.sessionId) as
+      | { user_id: string; unit_id: string; hearts_awarded: number }
+      | undefined;
+
+    if (existing) {
+      if (existing.user_id !== input.userId || existing.unit_id !== input.unitId) {
+        throw new Error("Practice session does not belong to this learner.");
+      }
+      const current = rawSqlite
+        .prepare("SELECT hearts FROM progress WHERE user_id = ?")
+        .get(input.userId) as { hearts: number } | undefined;
+      rawSqlite.exec("COMMIT");
+      return {
+        hearts: current?.hearts ?? MAX_HEARTS,
+        heartsAwarded: existing.hearts_awarded,
+        alreadyApplied: true,
+      };
+    }
+
+    const current = rawSqlite
+      .prepare("SELECT hearts FROM progress WHERE user_id = ?")
+      .get(input.userId) as { hearts: number } | undefined;
+    const heartsBefore = current?.hearts ?? 0;
+    const heartsAwarded = Math.min(1, Math.max(0, MAX_HEARTS - heartsBefore));
+    const hearts = Math.min(MAX_HEARTS, heartsBefore + heartsAwarded);
+
+    rawSqlite
+      .prepare(
+        `INSERT INTO practice_sessions
+          (id, user_id, unit_id, hearts_awarded, created_at)
+         VALUES (?, ?, ?, ?, ?)`,
+      )
+      .run(input.sessionId, input.userId, input.unitId, heartsAwarded, now);
+    rawSqlite
+      .prepare(
+        `UPDATE progress
+         SET hearts = ?, hearts_updated_at = ?, updated_at = ?
+         WHERE user_id = ?`,
+      )
+      .run(hearts, now, now, input.userId);
+
+    rawSqlite.exec("COMMIT");
+    return { hearts, heartsAwarded, alreadyApplied: false };
+  } catch (error) {
+    rawSqlite.exec("ROLLBACK");
+    throw error;
+  }
 }
 
 export async function completedLessonKeys(userId: string): Promise<string[]> {
@@ -292,38 +386,75 @@ export async function topLearners(limit = 10) {
     .limit(limit);
 }
 
-export async function recordPurchase(input: {
+/**
+ * Record a paid checkout and provision Pro in one transaction. A retry with
+ * the same checkout id returns without a second charge or activation, and a
+ * crash after the user update rolls the whole operation back.
+ */
+export async function provisionProPurchase(input: {
   userId: string;
   checkoutId: string;
   kind: string;
   amountDzd: number;
   livemode: boolean;
 }): Promise<boolean> {
-  if (!db) {
+  if (!rawSqlite) {
     if (previewPurchases.has(input.checkoutId)) return false;
     previewPurchases.set(input.checkoutId, input);
+    const current = previewPlayers.get(input.userId);
+    if (current) previewPlayers.set(input.userId, { ...current, plan: "pro" });
     return true;
   }
 
-  const result = await db
-    .insert(purchases)
-    .values({ id: crypto.randomUUID(), status: "paid", ...input })
-    .onConflictDoNothing({ target: purchases.checkoutId })
-    .returning({ id: purchases.id });
-  return result.length > 0;
-}
+  const now = Math.floor(Date.now() / 1000);
+  const expires = now + 365 * 24 * 60 * 60;
+  rawSqlite.exec("BEGIN IMMEDIATE");
+  try {
+    const existing = rawSqlite
+      .prepare("SELECT user_id, provisioned FROM purchases WHERE checkout_id = ?")
+      .get(input.checkoutId) as
+      | { user_id: string; provisioned: number }
+      | undefined;
 
-export async function activatePro(userId: string): Promise<void> {
-  if (!db) {
-    const current = previewPlayers.get(userId);
-    if (current) previewPlayers.set(userId, { ...current, plan: "pro" });
-    return;
+    if (existing && existing.user_id !== input.userId) {
+      throw new Error("Checkout belongs to another learner.");
+    }
+    if (existing?.provisioned === 1) {
+      rawSqlite.exec("COMMIT");
+      return false;
+    }
+
+    if (!existing) {
+      rawSqlite
+        .prepare(
+          `INSERT INTO purchases
+            (id, user_id, checkout_id, kind, amount_dzd, provisioned, status, livemode, created_at)
+           VALUES (?, ?, ?, ?, ?, 0, 'paid', ?, ?)`,
+        )
+        .run(
+          crypto.randomUUID(),
+          input.userId,
+          input.checkoutId,
+          input.kind,
+          input.amountDzd,
+          input.livemode ? 1 : 0,
+          now,
+        );
+    }
+
+    rawSqlite
+      .prepare("UPDATE users SET plan = 'pro', plan_expires_at = ?, updated_at = ? WHERE id = ?")
+      .run(expires, now, input.userId);
+    rawSqlite
+      .prepare("UPDATE purchases SET provisioned = 1, status = 'paid' WHERE checkout_id = ?")
+      .run(input.checkoutId);
+
+    rawSqlite.exec("COMMIT");
+    return true;
+  } catch (error) {
+    rawSqlite.exec("ROLLBACK");
+    throw error;
   }
-  const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
-  await db
-    .update(users)
-    .set({ plan: "pro", planExpiresAt: expires, updatedAt: new Date() })
-    .where(eq(users.id, userId));
 }
 
 export async function isProUser(userId: string): Promise<boolean> {

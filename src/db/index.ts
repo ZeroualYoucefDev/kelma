@@ -68,9 +68,19 @@ const SCHEMA_SQL = `
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     lesson_key TEXT NOT NULL,
     hearts_after INTEGER NOT NULL,
+    applied INTEGER NOT NULL DEFAULT 0,
     created_at INTEGER NOT NULL
   );
   CREATE INDEX IF NOT EXISTS heart_events_user_idx ON heart_events (user_id);
+
+  CREATE TABLE IF NOT EXISTS practice_sessions (
+    id TEXT PRIMARY KEY NOT NULL,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    unit_id TEXT NOT NULL,
+    hearts_awarded INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS practice_sessions_user_idx ON practice_sessions (user_id);
 
   CREATE TABLE IF NOT EXISTS lesson_attempts (
     id TEXT PRIMARY KEY NOT NULL,
@@ -88,6 +98,7 @@ const SCHEMA_SQL = `
     checkout_id TEXT,
     kind TEXT NOT NULL,
     amount_dzd INTEGER NOT NULL DEFAULT 0,
+    provisioned INTEGER NOT NULL DEFAULT 0,
     status TEXT NOT NULL DEFAULT 'pending',
     livemode INTEGER NOT NULL DEFAULT 0,
     created_at INTEGER NOT NULL
@@ -126,6 +137,40 @@ function createDb() {
     if (!userColumns.has(column)) sqlite.exec(statement);
   }
 
+  // Multiple Next.js build workers can open this file at the same time, so an
+  // ALTER that loses the race must be treated as success.
+  function ensureColumn(table: string, column: string, statement: string) {
+    const columns = new Set(
+      (sqlite.prepare(`PRAGMA table_info(${table})`).all() as Array<{ name: string }>).map(
+        (entry) => entry.name,
+      ),
+    );
+    if (columns.has(column)) return;
+    try {
+      sqlite.exec(statement);
+    } catch (error) {
+      if (!/duplicate column name/i.test(String(error))) throw error;
+    }
+  }
+
+  // Older heart events were finalized in a separate step, so they are already
+  // applied. New events use the atomic settle path below.
+  ensureColumn(
+    "heart_events",
+    "applied",
+    "ALTER TABLE heart_events ADD COLUMN applied INTEGER NOT NULL DEFAULT 0",
+  );
+  sqlite.exec("UPDATE heart_events SET applied = 1 WHERE applied = 0");
+
+  // Purchases created before the atomic provision path were activated by the
+  // old webhook handler, so mark them provisioned.
+  ensureColumn(
+    "purchases",
+    "provisioned",
+    "ALTER TABLE purchases ADD COLUMN provisioned INTEGER NOT NULL DEFAULT 0",
+  );
+  sqlite.exec("UPDATE purchases SET provisioned = 1 WHERE status = 'paid' AND provisioned = 0");
+
   const cleanParams = (params: unknown[]) =>
     params.map((value): any => (value === undefined ? null : value));
 
@@ -135,7 +180,7 @@ function createDb() {
     return records.map((record) => names.map((name) => record[name] ?? null));
   };
 
-  return drizzle(
+  const database = drizzle(
     async (sql, params, method) => {
       const statement = sqlite.prepare(sql);
       if (method === "run") {
@@ -149,9 +194,16 @@ function createDb() {
     },
     { schema },
   );
+
+  return { database, sqlite };
 }
 
 export const isDbConfigured = !disabled;
 
+const created = disabled ? null : createDb();
+
 /** Typed Drizzle client. SQLite is always available unless explicitly disabled. */
-export const db = disabled ? null : createDb();
+export const db = created?.database ?? null;
+
+/** Raw handle for the few operations that must be atomic across two tables. */
+export const rawSqlite = created?.sqlite ?? null;

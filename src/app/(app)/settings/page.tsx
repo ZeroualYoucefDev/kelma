@@ -46,7 +46,6 @@ export default async function SettingsPage() {
               sourceLanguage: player.sourceLanguage,
               targetLanguage: player.targetLanguage,
               dailyGoalMinutes: player.dailyGoalMinutes,
-              learningReason: player.learningReason ?? "fun",
             }}
           />
         </div>
@@ -70,7 +69,7 @@ export default async function SettingsPage() {
             ) : (
               <>
                 <p className="mt-4 text-sm text-slate-400">
-                  Upgrade in DZD with CIB or Edahabia. Activation happens automatically when a verified
+                  Upgrade in DZD with CIB, Edahabia or the Chargily app. Activation happens automatically when a verified
                   Chargily webhook arrives.
                 </p>
                 <div className="mt-5">

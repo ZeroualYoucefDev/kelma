@@ -26,7 +26,10 @@ export default async function ShopPage() {
             <Gem className="size-3.5" /> Shop
           </p>
           <h1 className="mt-2 font-display text-4xl font-extrabold">Spend your hard-earned gems.</h1>
-          <p className="mt-3 text-sm text-slate-400">Consumables are bought with gems. Pro is billed in DZD.</p>
+          <p className="mt-3 text-sm text-slate-400">
+            Consumables are bought with gems. Pro is billed in DZD. No gems? Practice any unit on your
+            learning path to earn a heart back for free.
+          </p>
         </div>
         <div className="rounded-xl border border-teal/30 bg-teal/10 px-4 py-3 text-sm font-extrabold text-teal">
           💎 {progress.gems} gems

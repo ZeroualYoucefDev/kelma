@@ -25,6 +25,13 @@ export default async function LessonPage({
     isProUser(viewer.id),
   ]);
   const hearts = refillHearts(progress.hearts, progress.heartsUpdatedAt);
+  const curriculum = await buildCurriculum(player.sourceLanguage, player.targetLanguage).catch(
+    () => null,
+  );
+  const firstUnit = curriculum?.units[0];
+  const unit = curriculum?.units.find((item) =>
+    item.lessons.some((lesson) => lesson.id === lessonId),
+  );
 
   if (!isPro && hearts.hearts <= 0) {
     return (
@@ -34,28 +41,25 @@ export default async function LessonPage({
         </div>
         <h1 className="mt-5 font-display text-2xl font-extrabold">Lessons are locked</h1>
         <p className="mt-2 text-sm text-muted">
-          Refill your hearts with gems or go Pro to keep this streak alive.
+          Practice a unit to earn a heart, refill with gems, or go Pro to keep this streak alive.
         </p>
         <div className="mt-6 grid gap-2 sm:grid-cols-2">
-          <Button asChild variant="secondary">
-            <Link href="/learn">Back to cards</Link>
-          </Button>
           <Button asChild>
-            <Link href="/shop">
-              <Heart className="size-4" /> Refill hearts
+            <Link href={firstUnit ? `/practice/${firstUnit.id}` : "/learn"}>
+              <Heart className="size-4" /> Practice for a heart
             </Link>
+          </Button>
+          <Button asChild variant="secondary">
+            <Link href="/shop">Use gems or go Pro</Link>
+          </Button>
+          <Button asChild variant="ghost" className="sm:col-span-2">
+            <Link href="/learn">Back to cards</Link>
           </Button>
         </div>
       </div>
     );
   }
 
-  const curriculum = await buildCurriculum(player.sourceLanguage, player.targetLanguage).catch(
-    () => null,
-  );
-  const unit = curriculum?.units.find((item) =>
-    item.lessons.some((lesson) => lesson.id === lessonId),
-  );
   if (!unit) notFound();
 
   const lesson = await buildLesson(

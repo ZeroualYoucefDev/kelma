@@ -9,7 +9,7 @@ import { getViewer } from "@/lib/auth";
 import { getPlayer, getProgressFor, recentAttempts } from "@/lib/data";
 import { levelFromXp } from "@/lib/gamification";
 import { getLanguage } from "@/services/languages";
-import { LEARNING_REASONS, DAILY_GOALS } from "@/lib/onboarding";
+import { DAILY_GOALS } from "@/lib/onboarding";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +24,6 @@ export default async function ProfilePage() {
     getLanguage(player.targetLanguage ?? "es"),
   ]);
   const level = levelFromXp(progress.xp);
-  const reason = LEARNING_REASONS.find((item) => item.id === player.learningReason);
   const goal = DAILY_GOALS.find((item) => item.minutes === player.dailyGoalMinutes);
 
   const stats = [
@@ -43,7 +42,6 @@ export default async function ProfilePage() {
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="font-display text-3xl font-extrabold">{player.name}</h1>
               {player.plan === "pro" && <Badge variant="gold">👑 Pro</Badge>}
-              {viewer.isPreview && <Badge variant="outline">Preview</Badge>}
             </div>
             <p className="mt-1 text-sm text-slate-400">{player.email}</p>
             <p className="mt-1 text-xs text-slate-500">Learning {target.emoji} {target.name}</p>
@@ -75,7 +73,7 @@ export default async function ProfilePage() {
             {target.emoji} {target.name}
           </p>
           <p className="mt-1 text-xs text-slate-400">
-            {reason ? `For ${reason.label.toLowerCase()}` : "Your path is personal to you."}
+            Live words, locale-matched audio, and a rhythm you chose.
           </p>
           <Link href="/settings" className="mt-4 inline-block text-xs font-bold text-accent hover:underline">
             Change language →

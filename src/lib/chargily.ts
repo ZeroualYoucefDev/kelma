@@ -44,6 +44,13 @@ function baseUrl(): string {
 function apiKey(): string {
   const key = process.env.CHARGILY_API_KEY?.trim();
   if (!key) throw new Error("Chargily Pay is not configured on this deployment.");
+  // Example keys from the docs end in `xxxx`; calling the API with one always
+  // returns 401. Fail fast with an actionable message instead of a raw 401.
+  if (/xxxx/i.test(key)) {
+    throw new Error(
+      "Chargily test key is still a placeholder. Replace it with a real test_sk key from the Chargily dashboard.",
+    );
+  }
   return key;
 }
 

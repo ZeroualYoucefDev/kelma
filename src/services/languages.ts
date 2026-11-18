@@ -71,6 +71,14 @@ const SUPPORTED: Array<{ code: string; locale: string; emoji: string }> = [
   { code: "zu", locale: "zu-ZA", emoji: "🇿🇦" },
 ];
 
+/** BCP-47 tags that the pronunciation pipeline is allowed to synthesize. */
+export const SPEECH_LOCALES: readonly string[] = SUPPORTED.map((language) => language.locale);
+
+/** Guard for the public TTS route and client-side voice selection. */
+export function isSpeechLocale(locale: string): boolean {
+  return SPEECH_LOCALES.includes(locale);
+}
+
 type IsoRecord = { name?: string; nativeName?: string };
 type IsoDataset = Record<string, IsoRecord>;
 

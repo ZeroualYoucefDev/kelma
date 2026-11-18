@@ -36,6 +36,9 @@ export async function POST(request: Request) {
     const message = error instanceof Error ? error.message : "Unable to create checkout.";
     const unauthorized =
       message.includes("signed in") || message.includes("Verify") || message.includes("onboarding");
-    return NextResponse.json({ error: message }, { status: unauthorized ? 401 : 400 });
+    const misconfigured =
+      message.includes("not configured") || message.includes("placeholder");
+    const status = unauthorized ? 401 : misconfigured ? 503 : 400;
+    return NextResponse.json({ error: message }, { status });
   }
 }

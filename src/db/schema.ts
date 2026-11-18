@@ -57,9 +57,20 @@ export const heartEvents = sqliteTable(
       .references(() => users.id, { onDelete: "cascade" }),
     lessonKey: text("lesson_key").notNull(),
     heartsAfter: integer("hearts_after").notNull(),
+    applied: integer("applied", { mode: "boolean" }).notNull().default(false),
     createdAt: timestamp("created_at").notNull().$defaultFn(() => new Date()),
   },
 );
+
+export const practiceSessions = sqliteTable("practice_sessions", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  unitId: text("unit_id").notNull(),
+  heartsAwarded: integer("hearts_awarded").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().$defaultFn(() => new Date()),
+});
 
 export const lessonAttempts = sqliteTable("lesson_attempts", {
   id: text("id").primaryKey(),
@@ -83,6 +94,7 @@ export const purchases = sqliteTable(
     checkoutId: text("checkout_id"),
     kind: text("kind").notNull(),
     amountDzd: integer("amount_dzd").notNull().default(0),
+    provisioned: integer("provisioned", { mode: "boolean" }).notNull().default(false),
     status: text("status").notNull().default("pending"),
     livemode: integer("livemode", { mode: "boolean" }).notNull().default(false),
     createdAt: timestamp("created_at").notNull().$defaultFn(() => new Date()),

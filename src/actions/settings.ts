@@ -5,7 +5,7 @@ import { requireViewer } from "@/lib/auth";
 import { isAvatarId } from "@/lib/avatars";
 import { getPlayer, updatePlayer } from "@/lib/data";
 import { getLanguage } from "@/services/languages";
-import { isDailyGoal, isLearningReason } from "@/lib/onboarding";
+import { isDailyGoal } from "@/lib/onboarding";
 
 /** Persist identity and learning-language preferences. */
 export async function updateSettings(input: {
@@ -13,7 +13,6 @@ export async function updateSettings(input: {
   sourceLanguage: string;
   targetLanguage: string;
   dailyGoalMinutes: number;
-  learningReason: string;
 }): Promise<{ ok: boolean; message: string }> {
   const viewer = await requireViewer();
   const name = input.name.trim().slice(0, 60);
@@ -29,16 +28,11 @@ export async function updateSettings(input: {
   if (!isDailyGoal(input.dailyGoalMinutes)) {
     return { ok: false, message: "Choose a valid daily goal." };
   }
-  if (!isLearningReason(input.learningReason)) {
-    return { ok: false, message: "Choose why you are learning." };
-  }
-
   await updatePlayer(viewer.id, {
     name,
     sourceLanguage: source.code,
     targetLanguage: target.code,
     dailyGoalMinutes: input.dailyGoalMinutes,
-    learningReason: input.learningReason,
   });
 
   revalidatePath("/settings");

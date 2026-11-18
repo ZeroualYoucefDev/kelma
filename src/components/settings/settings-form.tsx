@@ -6,7 +6,7 @@ import { SignOutButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { updateSettings } from "@/actions/settings";
-import { DAILY_GOALS, LEARNING_REASONS } from "@/lib/onboarding";
+import { DAILY_GOALS } from "@/lib/onboarding";
 import type { Language } from "@/services/languages";
 import { cn } from "@/lib/utils";
 
@@ -21,14 +21,12 @@ export function SettingsForm({
     sourceLanguage: string;
     targetLanguage: string;
     dailyGoalMinutes: number;
-    learningReason: string;
   };
   clerkEnabled: boolean;
 }) {
   const [name, setName] = useState(initial.name);
   const [source, setSource] = useState(initial.sourceLanguage);
   const [target, setTarget] = useState(initial.targetLanguage);
-  const [reason, setReason] = useState(initial.learningReason);
   const [goal, setGoal] = useState(initial.dailyGoalMinutes);
   const [loading, setLoading] = useState(false);
 
@@ -41,7 +39,6 @@ export function SettingsForm({
         sourceLanguage: source,
         targetLanguage: target,
         dailyGoalMinutes: goal,
-        learningReason: reason,
       });
       if (result.ok) toast.success(result.message);
       else toast.error(result.message);
@@ -83,22 +80,6 @@ export function SettingsForm({
             ))}
           </select>
         </div>
-      </div>
-
-      <div>
-        <Label htmlFor="reason">Why you are learning</Label>
-        <select
-          id="reason"
-          className={selectClass}
-          value={reason}
-          onChange={(event) => setReason(event.target.value)}
-        >
-          {LEARNING_REASONS.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.label}
-            </option>
-          ))}
-        </select>
       </div>
 
       <div>

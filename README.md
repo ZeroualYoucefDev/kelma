@@ -17,8 +17,8 @@ Learning content is assembled at runtime from public internet APIs and open data
 - **Mandatory three-step onboarding** — native language, target language, and daily goal. Nothing is preselected or locked by default; every language is available in both directions.
 - **Playful learning dashboard** — custom SVG brand mark, floating stat pills, animated lesson cards, XP, levels, gems, streaks, streak freezes, and daily quests.
 - **Four live exercise families** — translation, reverse translation, listening, and dictionary meaning, generated from live word, translation, and dictionary data.
-- **Locale-matched audio** — the Web Speech API receives the exact active target locale (`es-ES`, `fr-FR`, `tr-TR`, `it-IT`, etc.) rather than an English default.
-- **Hearts with real consequences** — max 5; a wrong answer deducts one immediately, shakes the card, shows a modal alert, syncs to SQLite through a Server Action, and locks free lessons at zero. Pro accounts never lose hearts.
+- **Clean, locale-locked audio** — a provider voice streams from `/api/tts` in the exact active locale (`es-ES`, `fr-FR`, `tr-TR`, `it-IT`, etc.); Web Speech is only used when a genuine same-language system voice exists, so Spanish never falls back to the default French voice.
+- **Hearts with a way back** — max 5; a wrong answer deducts one immediately with shake + modal + SQLite sync. At zero, learners can practice any unit to earn a heart back for free, spend gems, wait for timed refill, or go Pro. Practice mistakes never cost hearts.
 - **Shop and Pro checkout** — gems buy heart refills and streak freezes; Kelma Pro is purchased through **Chargily Pay API v2** in DZD using CIB, Edahabia, or the Chargily app.
 - **Profile and Settings** — avatars are chosen there, not during onboarding, so the selected character is preserved across the sidebar, profile, and leaderboard.
 
@@ -30,7 +30,7 @@ Learning content is assembled at runtime from public internet APIs and open data
 | Language names | ISO-639-1 dataset on GitHub (+ `Intl.DisplayNames` fallback) | `src/services/languages.ts` |
 | Translations | MyMemory Translation REST API | `src/services/translation.ts` |
 | Definitions, phonetics, recordings | Free Dictionary API | `src/services/dictionary.ts` |
-| Audio | Browser Web Speech Synthesis API | `src/services/audio.ts` |
+| Audio | Clean provider voice (`/api/tts`) + strict Web Speech fallback | `src/app/api/tts/route.ts`, `src/services/audio.ts` |
 | Unit/lesson structure | Live dataset-derived structure at request time | `src/services/curriculum.ts` |
 
 Only structural unit and lesson labels live in code. Words, translations, answer choices, and audio locales come from live data. Distractors are other live words from the same generated lesson, never invented placeholders. All upstream calls are time-boxed and cached in process; provider failures surface as clear errors rather than fake content.
@@ -42,14 +42,14 @@ Only structural unit and lesson labels live in code. Words, translations, answer
 | Layer | Technology |
 | --- | --- |
 | Framework | **Next.js 16.4.6** (App Router, Server Components, Server Actions, Route Handlers, `proxy.ts`) |
-| Runtime | React 19.3.1, TypeScript 5.9, Node.js ≥ 20.9 |
+| Runtime | React 19.3.1, TypeScript 5.9, Node.js ≥ 22.5 (`node:sqlite`) |
 | Styling | **Tailwind CSS 4** with a custom dark palette; shadcn-style primitives on Radix UI + `class-variance-authority` |
 | Icons | `lucide-react` |
 | Database | **SQLite** (zero-config local file, default `./kelma.db`) |
 | ORM | **Drizzle ORM** with Node’s built-in `node:sqlite` engine via `sqlite-proxy`; schema is created on first run |
 | Authentication | **Clerk Core 3** — custom passwordless UI for Google SSO, email magic links, and phone OTP |
 | Payments | **Chargily Pay API v2** direct REST — DZD, CIB/Edahabia/Chargily app, HMAC-SHA256 webhooks |
-| External data | MyMemory, Free Dictionary, GitHub frequency/ISO datasets, Web Speech API |
+| External data | MyMemory, Free Dictionary, GitHub frequency/ISO datasets, Google Translate TTS, Web Speech API |
 | Feedback | `sonner` toasts |
 
 ### Next.js 16 conventions used
@@ -121,7 +121,8 @@ src/app/
 - Each answer ID is idempotent, so duplicate client events cannot double-charge.
 - One heart regenerates every 10 minutes, capped at 5.
 - `heart_events` and `progress` are kept in sync; completing a lesson only commits rewards and the latest heart state.
-- Free learners are blocked from entering or continuing a lesson at zero hearts until a refill or Pro activation.
+- Free learners are blocked from lessons at zero hearts, but unit practice stays open and `completePractice` atomically awards one heart (capped at 5), so lessons are never permanently unreachable.
+- Practice rounds are idempotent per `practice_sessions.id` and never deduct hearts.
 
 ---
 
@@ -227,7 +228,7 @@ The webhook reads the **raw body**, verifies the `signature` header with HMAC-SH
 Production notes:
 
 - External datasets are cached per server instance; tune with `LINGUISTICS_CACHE_TTL_SECONDS`.
-- Web Speech audio is generated on the learner’s device, so no audio storage is required.
+- Pronunciation audio is streamed and cached at the edge by `/api/tts`; Web Speech is a strict same-language fallback, so no audio storage is required.
 - Never expose `CLERK_SECRET_KEY`, `CHARGILY_API_KEY`, or `CHARGILY_SECRET_KEY` with a `NEXT_PUBLIC_` prefix.
 
 ---
@@ -238,6 +239,7 @@ Production notes:
 | --- | --- |
 | `GET /api/curriculum?source=en&target=es` | Live unit map for the selected language pair |
 | `GET /api/translate?q=hello&from=en&to=es` | Live translation proxy |
+| `GET /api/tts?text=hola&locale=es-ES` | Clean locale-locked pronunciation audio |
 | `POST /api/checkout/chargily` | Creates a DZD checkout (`cib`, `edahabia`, or `chargily_app`) |
 | `POST /api/webhooks/chargily` | Signature-verified Chargily event handler |
 

@@ -6,7 +6,7 @@ import {
   webhookMatchesMode,
   type ChargilyEvent,
 } from "@/lib/chargily";
-import { activatePro, recordPurchase } from "@/lib/data";
+import { provisionProPurchase } from "@/lib/data";
 
 export const runtime = "nodejs";
 
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     }
 
     try {
-      const firstTime = await recordPurchase({
+      const firstTime = await provisionProPurchase({
         userId,
         checkoutId: checkout.id,
         kind: "pro",
@@ -56,7 +56,6 @@ export async function POST(request: Request) {
       });
 
       if (firstTime) {
-        await activatePro(userId);
         revalidatePath("/settings");
         revalidatePath("/profile");
         revalidatePath("/learn");

@@ -3,12 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { requireOnboardedViewer } from "@/lib/auth";
 import {
-  decrementHeart,
-  finalizeHeartEvent,
+  awardPracticeHeart,
   getPlayer,
   getProgressFor,
   reserveHeartEvent,
   saveProgress,
+  settleHeartEvent,
 } from "@/lib/data";
 import { MAX_HEARTS, refillHearts } from "@/lib/gamification";
 
@@ -59,25 +59,16 @@ export async function registerWrongAnswer(input: {
     return { hearts: 0, max: MAX_HEARTS, deducted: false, locked: true, isPro: false };
   }
 
-  const reserved = await reserveHeartEvent({
+  await reserveHeartEvent({
     eventId: answerId,
     userId: viewer.id,
     lessonKey: input.lessonKey,
     projectedHearts: refilled.hearts - 1,
   });
 
-  if (!reserved.applied) {
-    return {
-      hearts: reserved.heartsAfter,
-      max: MAX_HEARTS,
-      deducted: false,
-      locked: reserved.heartsAfter <= 0,
-      isPro: false,
-    };
-  }
-
-  const hearts = await decrementHeart(viewer.id);
-  await finalizeHeartEvent(answerId, hearts);
+  // Safe on retries: settleHeartEvent is atomic and returns the authoritative
+  // stored count plus whether this call actually spent the heart.
+  const settled = await settleHeartEvent({ eventId: answerId, userId: viewer.id });
 
   revalidatePath("/learn");
   revalidatePath("/lesson/[lessonId]", "page");
@@ -85,10 +76,68 @@ export async function registerWrongAnswer(input: {
   revalidatePath("/profile");
 
   return {
-    hearts,
+    hearts: settled.hearts,
     max: MAX_HEARTS,
-    deducted: hearts < refilled.hearts,
-    locked: hearts <= 0,
+    deducted: settled.appliedNow,
+    locked: settled.hearts <= 0,
+    isPro: false,
+  };
+}
+
+export type PracticeResult = {
+  hearts: number;
+  max: number;
+  heartEarned: boolean;
+  isPro: boolean;
+};
+
+/**
+ * Complete a unit practice round to earn a heart. Practice never costs hearts,
+ * so a free learner at zero always has a path back into lessons without gems
+ * or a paid plan. A client-generated session id makes retries idempotent.
+ */
+export async function completePractice(input: {
+  sessionId: string;
+  unitId: string;
+  correct: number;
+  total: number;
+}): Promise<PracticeResult> {
+  const viewer = await requireOnboardedViewer();
+  const player = await getPlayer(viewer);
+
+  if (player.plan === "pro") {
+    return { hearts: MAX_HEARTS, max: MAX_HEARTS, heartEarned: false, isPro: true };
+  }
+
+  const sessionId = input.sessionId?.trim();
+  const unitId = input.unitId?.trim();
+  if (!sessionId || sessionId.length > 128 || !unitId || unitId.length > 128) {
+    throw new Error("A valid practice session is required.");
+  }
+  if (!Number.isFinite(input.total) || input.total <= 0 || input.total > 50) {
+    throw new Error("A valid practice round is required.");
+  }
+
+  const current = await getProgressFor(viewer.id);
+  const refilled = refillHearts(current.hearts, current.heartsUpdatedAt);
+  if (
+    refilled.hearts !== current.hearts ||
+    refilled.heartsUpdatedAt.getTime() !== current.heartsUpdatedAt.getTime()
+  ) {
+    await saveProgress(viewer.id, { ...current, ...refilled });
+  }
+
+  const awarded = await awardPracticeHeart({ sessionId, userId: viewer.id, unitId });
+
+  revalidatePath("/learn");
+  revalidatePath("/shop");
+  revalidatePath("/profile");
+  revalidatePath("/lesson/[lessonId]", "page");
+
+  return {
+    hearts: awarded.hearts,
+    max: MAX_HEARTS,
+    heartEarned: awarded.heartsAwarded > 0,
     isPro: false,
   };
 }

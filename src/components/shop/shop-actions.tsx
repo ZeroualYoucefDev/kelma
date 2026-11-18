@@ -67,6 +67,14 @@ export function CheckoutButtons({ compact = false }: { compact?: boolean }) {
       <Button variant="pro" onClick={() => checkout("edahabia")} disabled={loading !== null}>
         {loading === "edahabia" ? "Opening…" : "Pay with Edahabia"}
       </Button>
+      <Button
+        variant="secondary"
+        className={compact ? "" : "sm:col-span-2"}
+        onClick={() => checkout("chargily_app")}
+        disabled={loading !== null}
+      >
+        {loading === "chargily_app" ? "Opening…" : "Pay with Chargily App"}
+      </Button>
     </div>
   );
 }

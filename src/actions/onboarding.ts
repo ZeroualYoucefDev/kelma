@@ -39,7 +39,6 @@ export async function completeOnboarding(input: {
     await updatePlayer(viewer.id, {
       sourceLanguage: native.code,
       targetLanguage: target.code,
-      learningReason: null,
       dailyGoalMinutes: input.dailyGoalMinutes,
       onboardingCompleted: true,
     });

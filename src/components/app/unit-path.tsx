@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowUpRight, Check, Lock, Sparkles } from "lucide-react";
 import { useHearts } from "@/components/app/app-shell";
+import { Button } from "@/components/ui/button";
 import type { CurriculumPlan } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -50,6 +51,17 @@ export function UnitPath({
               </h2>
               <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-muted">{unit.description}</p>
             </div>
+            <Button
+              asChild
+              size="sm"
+              variant={!isPro && hearts <= 0 ? "default" : "secondary"}
+              className="shrink-0"
+            >
+              <Link href={`/practice/${unit.id}`}>
+                <Sparkles className="size-3.5" />
+                {!isPro && hearts <= 0 ? "Earn a heart" : "Practice unit"}
+              </Link>
+            </Button>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -57,7 +69,7 @@ export function UnitPath({
               const state = stateFor(lesson.id);
               const locked = state === "locked";
               const available = state === "current" || state === "up-next" || state === "done";
-              const href = locked ? "/shop" : available ? `/lesson/${lesson.id}` : "#";
+              const href = locked ? `/practice/${unit.id}` : available ? `/lesson/${lesson.id}` : "#";
 
               const card = (
                 <div
@@ -111,7 +123,7 @@ export function UnitPath({
                         : state === "current"
                           ? "Up now"
                           : locked
-                            ? "Refill hearts"
+                            ? "Earn a heart"
                             : "Ready"}
                     </span>
                   </div>
@@ -144,7 +156,7 @@ export function UnitPath({
 
               if (locked) {
                 return (
-                  <Link key={lesson.id} href={href} className="block" aria-label="Refill hearts to continue">
+                  <Link key={lesson.id} href={href} className="block" aria-label="Practice to earn a heart">
                     {card}
                   </Link>
                 );
