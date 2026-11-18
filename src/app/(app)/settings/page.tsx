@@ -75,7 +75,7 @@ export default async function SettingsPage() {
               <ShieldCheck className="size-4 text-accent" /> Verification
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-slate-400">
-              Only verified Google, email magic-link or phone-OTP sessions can reach the dashboard.
+              Only verified Google or one-time email-code sessions can reach the dashboard.
               Password registration is not offered anywhere in the product.
             </p>
             <Badge variant="accent" className="mt-4">Verified account</Badge>

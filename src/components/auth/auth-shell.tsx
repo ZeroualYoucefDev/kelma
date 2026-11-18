@@ -29,7 +29,7 @@ export function AuthShell({
               Your next language is one small lesson away.
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-slate-400">
-              Passwordless by design. Google, a magic link, or a one-time code — then straight into your dashboard.
+              Passwordless by design. Google or a one-time email code — then straight into your dashboard.
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs font-semibold text-accent">
@@ -59,7 +59,7 @@ export function SetupNotice() {
       <strong className="block font-display text-base">Clerk keys are not configured.</strong>
       Add <code className="rounded bg-black/30 px-1">NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY</code> and{" "}
       <code className="rounded bg-black/30 px-1">CLERK_SECRET_KEY</code> to <code>.env.local</code> to enable
-      Google SSO, magic links and phone OTP. Enable those providers in the Clerk dashboard.
+      Google SSO and one-time email codes. Enable those providers in the Clerk dashboard.
     </div>
   );
 }

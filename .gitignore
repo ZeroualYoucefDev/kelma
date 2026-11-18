@@ -7,3 +7,6 @@ out/
 *.tsbuildinfo
 .DS_Store
 npm-debug.log*
+*.db
+*.db-shm
+*.db-wal

@@ -15,9 +15,9 @@ Kelma turns a language into a game path:
 - **Sequential units** with winding, alternating lesson nodes, lock states and completion feedback.
 - **Four exercise families** — translation, reverse translation, listening and dictionary meaning — generated from live word, translation and dictionary data.
 - **Native-sounding audio** produced at runtime by the browser Web Speech API in the target language's locale.
-- **Hearts** (5 max, one heart per 10 minutes), **XP**, **levels**, **gems**, **daily streaks**, **streak freezes** and **daily quests**, all persisted in PostgreSQL.
+- **Hearts** (5 max, one heart per 10 minutes), **XP**, **levels**, **gems**, **daily streaks**, **streak freezes** and **daily quests**, all persisted in a local SQLite database.
 - **A virtual shop** where gems buy heart refills and streak freezes, and where **Kelma Pro** is purchased through **Chargily Pay API v2** in DZD using CIB or Edahabia cards.
-- **Strict passwordless onboarding** — Google SSO, email magic links and phone OTP only. A session cannot enter the dashboard until an email or phone factor is verified; the confirmation flow lands directly on `/learn`.
+- **Strict passwordless onboarding** — Google SSO and one-time email codes only. A session cannot enter the dashboard until its email factor is verified; the confirmation flow lands directly on `/learn`.
 
 ### The "no dummy content" rule
 
@@ -44,16 +44,16 @@ Distractors are other live words from the same generated lesson, never invented 
 | Runtime | React 19.3.1, TypeScript 5.9, Node.js ≥ 20.9 |
 | Styling | **Tailwind CSS 4** with a custom high-contrast dark theme; **shadcn-style** primitives built on Radix UI + `class-variance-authority` |
 | Icons | `lucide-react` |
-| Database | **PostgreSQL** (Neon / Supabase / any pg-compatible host) |
-| ORM | **Drizzle ORM** with the `postgres` driver; migrations via `drizzle-kit` |
-| Authentication | **Clerk** — Google SSO, email magic links, phone OTP. Passwords are never offered. |
+| Database | **SQLite** (zero-config local file at `./kelma.db`) |
+| ORM | **Drizzle ORM** with Node's built-in `node:sqlite` engine via the `sqlite-proxy` driver; schema auto-created on first run |
+| Authentication | **Clerk** — custom passwordless UI with Google SSO and one-time email codes. Passwords are never offered. |
 | Payments | **Chargily Pay API v2** (direct REST) — CIB, Edahabia, Chargily app; DZD; HMAC-SHA256 webhooks |
 | External data | MyMemory Translation API, Free Dictionary API, Google frequency-word dataset, ISO-639-1 dataset, Web Speech API |
 | Feedback | `sonner` toasts |
 
 ### Notable Next.js 16 conventions used
 
-- `proxy.ts` replaces the deprecated `middleware.ts` for optimistic auth redirects.
+- `src/proxy.ts` replaces the deprecated `middleware.ts` for optimistic auth redirects.
 - All request-time APIs are asynchronous (`params` is a `Promise`, `cookies()`/`headers()` are awaited).
 - Turbopack is the default bundler; no legacy experimental flags are set.
 - Route Handlers use the Web `Request`/`Response` APIs and explicit `runtime = "nodejs"` where Node crypto is needed.
@@ -75,7 +75,7 @@ src/app/
 ├── (app)/units/[unitId]           # unit detail + lesson list
 ├── (app)/lesson/[lessonId]        # lesson player
 ├── (app)/quests                   # daily quests
-├── (app)/leaderboard              # XP rankings from PostgreSQL
+├── (app)/leaderboard              # XP rankings from SQLite
 ├── (app)/shop                     # gem consumables + Pro checkout
 ├── (app)/profile                  # stats and recent activity
 ├── (app)/settings                 # profile, languages, billing, sign-out
@@ -94,9 +94,9 @@ src/app/
 
 ### Verification flow
 
-1. Visitor chooses **Google**, **email magic link**, or **phone OTP** in Clerk. No password field exists.
-2. Clerk verifies the factor and redirects using `forceRedirectUrl="/learn"` (also configured via `NEXT_PUBLIC_CLERK_*_FALLBACK_REDIRECT_URL`).
-3. The dashboard layout double-checks `emailAddresses[].verification.status` / `phoneNumbers[].verification.status`. Unverified sessions are bounced to `/verify`.
+1. Visitor chooses **Google** or enters an email address for a one-time code. No password field exists.
+2. The custom `SignInFuture`/`SignUpFuture` flow verifies the factor and finalizes the session straight into `/learn`.
+3. The dashboard layout double-checks `emailAddresses[].verification.status`. Unverified sessions are bounced to `/verify`.
 
 ### Gamification state machine
 
@@ -110,7 +110,7 @@ src/app/
 
 ### Local preview mode
 
-When Clerk keys are absent, the app runs in an explicitly labelled **preview mode**: the UI and the live curriculum are fully browsable with an in-process progress store, and a banner explains that nothing is persisted. Production always requires Clerk and PostgreSQL. This is a development convenience, not a content fallback.
+When Clerk keys are absent, the app runs in an explicitly labelled **preview mode**: the UI and the live curriculum are fully browsable with an in-process progress store, and a banner explains that nothing is persisted. With Clerk configured, progress is saved to SQLite automatically — no database server or manual migration step is required.
 
 ---
 
@@ -118,8 +118,8 @@ When Clerk keys are absent, the app runs in an explicitly labelled **preview mod
 
 - Node.js **20.9+** (tested on 22)
 - npm 10+
-- A PostgreSQL database (Neon or Supabase free tier is enough)
-- A Clerk application with **Google**, **email link** and **phone** factors enabled
+- No database server required — Kelma creates and uses `./kelma.db`
+- A Clerk application with **Google** and **email verification code** factors enabled
 - A Chargily Pay merchant account (test keys are fine for development)
 
 Copy the template and fill in real values:
@@ -132,7 +132,7 @@ cp .env.example .env.local
 
 ```dotenv
 NEXT_PUBLIC_APP_URL=http://localhost:3100
-DATABASE_URL=postgresql://user:password@host:5432/kelma?sslmode=require
+DATABASE_URL=./kelma.db
 
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
@@ -159,8 +159,7 @@ LINGUISTICS_CACHE_TTL_SECONDS=86400
 cd kelma
 npm install
 cp .env.example .env.local      # then edit with real keys
-npm run db:push                 # create tables from src/db/schema.ts
-npm run dev                     # http://localhost:3100
+npm run dev                     # http://localhost:3100 (SQLite tables created automatically)
 ```
 
 Useful commands:
@@ -169,20 +168,18 @@ Useful commands:
 npm run build        # production build
 npm run start        # serve the production build on :3100
 npm run typecheck    # strict TypeScript check
-npm run db:generate  # generate SQL migrations
-npm run db:push      # push schema directly (development)
+npm run db:generate  # generate SQL migrations (optional)
 ```
 
-If you do not yet have Clerk or database keys, you can still run `npm run dev` and explore the whole UI in preview mode — just skip `db:push`.
+If you do not yet have Clerk keys, you can still run `npm run dev` and explore the whole UI in preview mode. Once Clerk is configured, SQLite persistence starts automatically.
 
 ### Clerk setup checklist
 
 1. Create an application at [clerk.com](https://clerk.com).
 2. Enable **Google** as a social connection.
-3. Enable **Email address → Email verification link**.
-4. Enable **Phone number → SMS verification code**.
-5. Disable password-based strategies entirely.
-6. Add `http://localhost:3100` (and your Vercel URL) to allowed origins/redirect URLs.
+3. Enable **Email address → Email verification code**.
+4. Keep phone, magic-link and password strategies disabled in the UI.
+5. Add `http://localhost:3100` (and your Vercel URL) to allowed origins/redirect URLs.
 7. Set the four environment variables above.
 
 ### Chargily setup checklist
@@ -201,7 +198,7 @@ If you do not yet have Clerk or database keys, you can still run `npm run dev` a
 3. Framework preset: **Next.js** (Vercel detects Next 16). Build command `npm run build`, output auto-detected.
 4. Add every variable from `.env.example` to Vercel **Project Settings → Environment Variables**.
    - Set `NEXT_PUBLIC_APP_URL=https://<your-deployment>.vercel.app`.
-   - Set `DATABASE_URL` to the pooled Neon/Supabase connection string.
+   - Set `DATABASE_URL` to a SQLite file path on a persistent volume (for example `./data/kelma.db`). Serverless filesystems are ephemeral, so use a persistent mount for real deployments.
    - Set `CHARGILY_MODE=live` only once live keys are in place.
 5. In Clerk, add the Vercel domain to allowed origins and redirect URLs.
 6. In Chargily, register the production webhook:

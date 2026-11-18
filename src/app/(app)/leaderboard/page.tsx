@@ -28,7 +28,7 @@ export default async function LeaderboardPage() {
           <Trophy className="mx-auto size-10 text-slate-600" />
           <h2 className="mt-4 font-display text-xl font-bold">No rankings yet</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-slate-400">
-            Once a PostgreSQL database is connected and learners finish lessons, the leaderboard fills itself.
+            As learners finish lessons, the leaderboard fills itself automatically.
             In local preview there is no shared database.
           </p>
           <Button asChild className="mt-6">

@@ -1,13 +1,13 @@
 import {
-  boolean,
   integer,
-  pgTable,
+  sqliteTable,
   text,
-  timestamp,
   uniqueIndex,
-} from "drizzle-orm/pg-core";
+} from "drizzle-orm/sqlite-core";
 
-export const users = pgTable(
+const timestamp = (name: string) => integer(name, { mode: "timestamp" });
+
+export const users = sqliteTable(
   "users",
   {
     id: text("id").primaryKey(), // Clerk user id
@@ -17,32 +17,32 @@ export const users = pgTable(
     sourceLanguage: text("source_language").notNull().default("en"),
     targetLanguage: text("target_language").notNull().default("es"),
     plan: text("plan").notNull().default("free"), // free | pro
-    planExpiresAt: timestamp("plan_expires_at", { withTimezone: true }),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    planExpiresAt: timestamp("plan_expires_at"),
+    createdAt: timestamp("created_at").notNull().$defaultFn(() => new Date()),
+    updatedAt: timestamp("updated_at").notNull().$defaultFn(() => new Date()),
   },
   (table) => [uniqueIndex("users_email_idx").on(table.email)],
 );
 
-export const progress = pgTable("progress", {
+export const progress = sqliteTable("progress", {
   userId: text("user_id")
     .primaryKey()
     .references(() => users.id, { onDelete: "cascade" }),
   xp: integer("xp").notNull().default(0),
   gems: integer("gems").notNull().default(0),
   hearts: integer("hearts").notNull().default(5),
-  heartsUpdatedAt: timestamp("hearts_updated_at", { withTimezone: true })
+  heartsUpdatedAt: timestamp("hearts_updated_at")
     .notNull()
-    .defaultNow(),
+    .$defaultFn(() => new Date()),
   streak: integer("streak").notNull().default(0),
   longestStreak: integer("longest_streak").notNull().default(0),
   lastActiveDate: text("last_active_date"), // YYYY-MM-DD (UTC)
   streakFreezes: integer("streak_freezes").notNull().default(0),
   lessonsCompleted: integer("lessons_completed").notNull().default(0),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().$defaultFn(() => new Date()),
 });
 
-export const lessonAttempts = pgTable("lesson_attempts", {
+export const lessonAttempts = sqliteTable("lesson_attempts", {
   id: text("id").primaryKey(),
   userId: text("user_id")
     .notNull()
@@ -51,10 +51,10 @@ export const lessonAttempts = pgTable("lesson_attempts", {
   correct: integer("correct").notNull(),
   total: integer("total").notNull(),
   xpEarned: integer("xp_earned").notNull().default(0),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().$defaultFn(() => new Date()),
 });
 
-export const purchases = pgTable(
+export const purchases = sqliteTable(
   "purchases",
   {
     id: text("id").primaryKey(),
@@ -65,8 +65,8 @@ export const purchases = pgTable(
     kind: text("kind").notNull(),
     amountDzd: integer("amount_dzd").notNull().default(0),
     status: text("status").notNull().default("pending"),
-    livemode: boolean("livemode").notNull().default(false),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    livemode: integer("livemode", { mode: "boolean" }).notNull().default(false),
+    createdAt: timestamp("created_at").notNull().$defaultFn(() => new Date()),
   },
   (table) => [uniqueIndex("purchases_checkout_idx").on(table.checkoutId)],
 );

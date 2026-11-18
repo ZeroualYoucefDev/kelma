@@ -121,7 +121,7 @@ export default async function LandingPage() {
             </div>
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-semibold text-slate-500">
               <span>✓ No passwords</span>
-              <span>✓ Google, email or phone</span>
+              <span>✓ Google or one-time email code</span>
               <span>{poolSize > 0 ? `✓ ${poolSize.toLocaleString()} live words` : "✓ Live vocabulary"}</span>
             </div>
           </div>

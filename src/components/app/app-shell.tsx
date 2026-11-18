@@ -168,7 +168,7 @@ export function AppShell({ stats, children }: { stats: ShellStats; children: Rea
 
         {stats.isPreview && (
           <div className="border-b border-gold/20 bg-gold/8 px-4 py-2 text-center text-[11px] font-semibold text-gold">
-            Preview mode — connect Clerk and PostgreSQL to enable real accounts and saved progress.
+            Preview mode — connect Clerk to enable real accounts and saved progress.
           </div>
         )}
 

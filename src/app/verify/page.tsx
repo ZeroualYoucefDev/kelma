@@ -17,7 +17,7 @@ export default async function VerifyPage() {
   if (!viewer || viewer.verified) redirect("/learn");
 
   return (
-    <AuthShell title="One last step" subtitle="Confirm your email or phone to unlock your dashboard.">
+    <AuthShell title="One last step" subtitle="Confirm your email to unlock your dashboard.">
       {clerkConfigured ? (
         <div className="space-y-5">
           <div className="flex items-start gap-3 rounded-2xl border border-accent/25 bg-accent/8 p-4">
