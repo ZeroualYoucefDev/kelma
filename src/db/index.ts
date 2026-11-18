@@ -27,7 +27,7 @@ function resolveDatabasePath() {
     .replace(/^file:/i, "");
   return normalized === ":memory:"
     ? normalized
-    : path.resolve(process.cwd(), normalized);
+    : path.resolve(/* turbopackIgnore: true */ process.cwd(), normalized);
 }
 
 const SCHEMA_SQL = `
